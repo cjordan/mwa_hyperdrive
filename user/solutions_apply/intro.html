@@ -155,7 +155,7 @@ unambiguous when applying multiple timeblocks.</p>
 <p><code>apply-solutions</code> can be used instead of <code>solutions-apply</code>.</p>
 <p>A high-level overview of the steps in <code>solutions-apply</code> are below. Solid lines
 indicate actions that always happen, dashed lines are optional:</p>
-<pre><code class="language-mermaid">%%{init: {'theme':'dark', 'themeVariables': {'fontsize': 20}}}%%
+<pre class="mermaid">%%{init: {'theme':'dark', 'themeVariables': {'fontsize': 20}}}%%
 flowchart TD
     InputData[fa:fa-file Input data files]--&gt;Args
     CalSols[fa:fa-wrench Calibration\nsolutions]--&gt;Args
@@ -169,7 +169,7 @@ flowchart TD
         Read--&gt;Apply[&quot;fa:fa-code Apply calibration\nsolutions to timeblock&quot;]
         Apply--&gt;Write[fa:fa-save Write timeblock\nvisibilities]
     end
-</code></pre>
+</pre>
 
                     </main>
 
