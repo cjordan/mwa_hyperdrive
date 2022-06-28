@@ -14,7 +14,6 @@
         <meta name="theme-color" content="#ffffff" />
 
         <link rel="icon" href="../../favicon.svg">
-        <link rel="shortcut icon" href="../../favicon.png">
         <link rel="stylesheet" href="../../css/variables.css">
         <link rel="stylesheet" href="../../css/general.css">
         <link rel="stylesheet" href="../../css/chrome.css">
@@ -208,8 +207,7 @@ visibilities will be much slower.</p>
 #SBATCH --partition=gpuq
 #SBATCH --account=mwaeor
 #SBATCH --export=NONE
-#SBATCH --gres=tmp:50g
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:1,tmp:50g
 
 module use /pawsey/mwa/software/python3/modulefiles
 module load hyperdrive
