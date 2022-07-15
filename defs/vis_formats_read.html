@@ -148,47 +148,58 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="supported-visibility-formats-for-reading"><a class="header" href="#supported-visibility-formats-for-reading">Supported visibility formats for reading</a></h1>
-<pre><code class="language-admonish info title=&quot;Raw MWA data&quot;">Raw &quot;legacy&quot; MWA data comes in &quot;gpubox&quot; files. &quot;MWAX&quot; data comes in a similar
-format, and `*ch???*.fits` is a useful glob to identify them. Raw data can be
-accessed from the [ASVO](https://asvo.mwatelescope.org/).
-
-Here are examples of using each of these MWA formats with `di-calibrate`:
-
-```shell
-hyperdrive di-calibrate -d *gpubox*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
+<div id="admonition-raw-mwa-data" class="admonition info">
+<div class="admonition-title">
+<p>Raw MWA data</p>
+<p><a class="admonition-anchor-link" href="#admonition-raw-mwa-data"></a></p>
+</div>
+<div>
+<p>Raw &quot;legacy&quot; MWA data comes in &quot;gpubox&quot; files. &quot;MWAX&quot; data comes in a similar
+format, and <code>*ch???*.fits</code> is a useful glob to identify them. Raw data can be
+accessed from the <a href="https://asvo.mwatelescope.org/">ASVO</a>.</p>
+<p>Here are examples of using each of these MWA formats with <code>di-calibrate</code>:</p>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *gpubox*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
 hyperdrive di-calibrate -d *ch???*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
-```
-
-Note that all visibility formats should probably be accompanied by a metafits
-file. See [this page](mwa/metafits.md) for more info.
-
-`mwaf` files indicate what visibilities should be flagged. See [this
-page](mwa/mwaf.md) for more info.
 </code></pre>
-<pre><code class="language-admonish info title=&quot;Measurement sets&quot;">```shell
-hyperdrive di-calibrate -d *.ms *.metafits -s a_good_sky_model.yaml
-```
-
-Measurement sets are typically made with
-[`Birli`](https://github.com/MWATelescope/Birli) or
-[`cotter`](https://github.com/MWATelescope/cotter)
-([`Birli`](https://github.com/MWATelescope/Birli) preferred). Note that a
+<p>Note that all visibility formats should probably be accompanied by a metafits
+file. See <a href="mwa/metafits.html">this page</a> for more info.</p>
+<p><code>mwaf</code> files indicate what visibilities should be flagged. See <a href="mwa/mwaf.html">this
+page</a> for more info.</p>
+</div>
+</div>
+<div id="admonition-measurement-sets" class="admonition info">
+<div class="admonition-title">
+<p>Measurement sets</p>
+<p><a class="admonition-anchor-link" href="#admonition-measurement-sets"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *.ms *.metafits -s a_good_sky_model.yaml
+</code></pre>
+<p>Measurement sets are typically made with
+<a href="https://github.com/MWATelescope/Birli"><code>Birli</code></a> or
+<a href="https://github.com/MWATelescope/cotter"><code>cotter</code></a>
+(<a href="https://github.com/MWATelescope/Birli"><code>Birli</code></a> preferred). Note that a
 metafits is desirable but usually not required. At the time of writing,
 MWA-formatted measurement sets do not contain dead dipole information, and so
-calibration may not be as accurate as it could be.
+calibration may not be as accurate as it could be.</p>
+</div>
+</div>
+<div id="admonition-uvfits" class="admonition info">
+<div class="admonition-title">
+<p>uvfits</p>
+<p><a class="admonition-anchor-link" href="#admonition-uvfits"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *.uvfits *.metafits -s a_good_sky_model.yaml
 </code></pre>
-<pre><code class="language-admonish info title=&quot;uvfits&quot;">```shell
-hyperdrive di-calibrate -d *.uvfits *.metafits -s a_good_sky_model.yaml
-```
-
-When reading uvfits, a metafits is not required *only* if the user has supplied
+<p>When reading uvfits, a metafits is not required <em>only</em> if the user has supplied
 the MWA dipole delays. At the time of writing, MWA-formatted uvfits files do not
 contain dipole delays or dead dipole information, and so avoiding a metafits
-file when calibrating may mean it is not as accurate as it could be.
-
-A copy of the uvfits standard is
-[here](https://library.nrao.edu/public/memos/aips/memos/AIPSM_117.pdf).
-</code></pre>
+file when calibrating may mean it is not as accurate as it could be.</p>
+<p>A copy of the uvfits standard is
+<a href="https://library.nrao.edu/public/memos/aips/memos/AIPSM_117.pdf">here</a>.</p>
+</div>
+</div>
 
                     </main>
 

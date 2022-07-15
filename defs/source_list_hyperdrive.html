@@ -161,13 +161,17 @@ in the <a href="https://github.com/MWATelescope/mwa_hyperdrive/tree/main/example
 directory</a>.</p>
 <p>As most sky-models only include Stokes I, Stokes Q, U and V are not required to
 be specified. If they are not specified, they are assumed to have values of 0.</p>
-<pre><code class="language-admonish example">The following are the contents of a valid YAML file. `super_sweet_source1` is a
+<div id="admonition-example" class="admonition example">
+<div class="admonition-title">
+<p>Example</p>
+<p><a class="admonition-anchor-link" href="#admonition-example"></a></p>
+</div>
+<div>
+<p>The following are the contents of a valid YAML file. <code>super_sweet_source1</code> is a
 single-component point source with a list-type flux density.
-`super_sweet_source2` has two components: one Gaussian with a power law, and a
-shapelet with a curved power law.
-
-```yaml
----
+<code>super_sweet_source2</code> has two components: one Gaussian with a power law, and a
+shapelet with a curved power law.</p>
+<pre><code class="language-yaml">---
 super_sweet_source1:
   - ra: 10.0
     dec: -27.0
@@ -218,8 +222,9 @@ super_sweet_source2:
           q: 0.5
           u: 0.1
         q: 0.2
-```
 </code></pre>
+</div>
+</div>
 
                     </main>
 

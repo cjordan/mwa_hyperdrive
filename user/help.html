@@ -161,36 +161,31 @@ hyperdrive di-calibrate --help
 them after <code>hyperdrive</code>. Each subcommand accepts <code>--help</code> (as well as <code>-h</code>).
 Detailed usage information on each subcommand can be seen in the table of
 contents of this book. More information on subcommands as a concept is below.</p>
-<pre><code class="language-admonish info title=&quot;Subcommands&quot;">
-`hyperdrive` itself is split into many subcommands. These are simple to list:
-
-```shell
-hyperdrive -h
+<div id="admonition-subcommands" class="admonition info">
+<div class="admonition-title">
+<p>Subcommands</p>
+<p><a class="admonition-anchor-link" href="#admonition-subcommands"></a></p>
+</div>
+<div>
+<p><code>hyperdrive</code> itself is split into many subcommands. These are simple to list:</p>
+<pre><code class="language-shell">hyperdrive -h
 # OR
 hyperdrive --help
-```
-
-Output (edited for brevity):
-
-```plaintext
-SUBCOMMANDS:
+</code></pre>
+<p>Output (edited for brevity):</p>
+<pre><code class="language-plaintext">SUBCOMMANDS:
     di-calibrate
     vis-simulate
     solutions-convert
     solutions-plot
     srclist-by-beam
-```
-
-The help text for these is accessible in a similar way:
-
-```shell
-hyperdrive solutions-plot -h
+</code></pre>
+<p>The help text for these is accessible in a similar way:</p>
+<pre><code class="language-shell">hyperdrive solutions-plot -h
 # OR
 hyperdrive solutions-plot --help
-```
-
-```plaintext
-hyperdrive-solutions-plot 0.2.0-alpha.11
+</code></pre>
+<pre><code class="language-plaintext">hyperdrive-solutions-plot 0.2.0-alpha.11
 Plot calibration solutions. Only available if compiled with the &quot;plotting&quot; feature.
 
 USAGE:
@@ -209,24 +204,27 @@ OPTIONS:
     -v, --verbosity              The verbosity of the program. Increase by specifying multiple times (e.g. -vv). The default is to print only high-level information
     -h, --help                   Print help information
     -V, --version                Print version information
-```
 </code></pre>
-<pre><code class="language-admonish tip title=&quot;Shortcuts&quot;">
-It's possible to save keystrokes when subcommands aren't ambiguous, e.g. use
-`solutions-p` as an alias for `solutions-plot`:
-
-```shell
-hyperdrive solutions-p
+</div>
+</div>
+<div id="admonition-shortcuts" class="admonition tip">
+<div class="admonition-title">
+<p>Shortcuts</p>
+<p><a class="admonition-anchor-link" href="#admonition-shortcuts"></a></p>
+</div>
+<div>
+<p>It's possible to save keystrokes when subcommands aren't ambiguous, e.g. use
+<code>solutions-p</code> as an alias for <code>solutions-plot</code>:</p>
+<pre><code class="language-shell">hyperdrive solutions-p
 &lt;help text for &quot;solutions-plot&quot;&gt;
-```
-
-This works because there is no other subcommand that `solutions-p` could refer
-to. On the other hand, `solutions` won't be accepted because both
-`solutions-plot` and `solutions-convert` exist.
-
-`di-c` works for `di-calibrate`. Unfortunately this is not perfect; the `-` is
-required even though `di` should be enough.
 </code></pre>
+<p>This works because there is no other subcommand that <code>solutions-p</code> could refer
+to. On the other hand, <code>solutions</code> won't be accepted because both
+<code>solutions-plot</code> and <code>solutions-convert</code> exist.</p>
+<p><code>di-c</code> works for <code>di-calibrate</code>. Unfortunately this is not perfect; the <code>-</code> is
+required even though <code>di</code> should be enough.</p>
+</div>
+</div>
 
                     </main>
 

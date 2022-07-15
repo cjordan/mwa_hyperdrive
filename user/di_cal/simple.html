@@ -148,48 +148,71 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="simple-usage-of-di-calibrate"><a class="header" href="#simple-usage-of-di-calibrate">Simple usage of DI calibrate</a></h1>
-<pre><code class="language-admonish info">DI calibration is done with the `di-calibrate` subcommand, i.e.
-
-```shell
-hyperdrive di-calibrate
-```
-
-At the very least, this requires:
-- Input data (with the flag `-d`)
-  - [Supported formats](../../defs/vis_formats_read.md)
-- A sky model (with the flag `-s`)
-  - [Supported formats](../../defs/source_lists.md)
-  - PUMA sky models suitable for EoR calibration (and perhaps other parts of the
-    sky) can be obtained [here](https://github.com/JLBLine/srclists) (at the time of writing [srclist_pumav3_EoR0aegean_fixedEoR1pietro+ForA_phase1+2.txt](https://github.com/JLBLine/srclists/blob/master/srclist_pumav3_EoR0aegean_fixedEoR1pietro%2BForA_phase1%2B2.txt) is preferred)
+<div id="admonition-info" class="admonition info">
+<div class="admonition-title">
+<p>Info</p>
+<p><a class="admonition-anchor-link" href="#admonition-info"></a></p>
+</div>
+<div>
+<p>DI calibration is done with the <code>di-calibrate</code> subcommand, i.e.</p>
+<pre><code class="language-shell">hyperdrive di-calibrate
 </code></pre>
+<p>At the very least, this requires:</p>
+<ul>
+<li>Input data (with the flag <code>-d</code>)
+<ul>
+<li><a href="../../defs/vis_formats_read.html">Supported formats</a></li>
+</ul>
+</li>
+<li>A sky model (with the flag <code>-s</code>)
+<ul>
+<li><a href="../../defs/source_lists.html">Supported formats</a></li>
+<li>PUMA sky models suitable for EoR calibration (and perhaps other parts of the
+sky) can be obtained <a href="https://github.com/JLBLine/srclists">here</a> (at the time of writing <a href="https://github.com/JLBLine/srclists/blob/master/srclist_pumav3_EoR0aegean_fixedEoR1pietro%2BForA_phase1%2B2.txt">srclist_pumav3_EoR0aegean_fixedEoR1pietro+ForA_phase1+2.txt</a> is preferred)</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
-<pre><code class="language-admonish example title=&quot;Raw MWA data&quot;">A [metafits](../../defs/mwa/metafits.md) file is always required when reading
-raw MWA data. [`mwaf`](../../defs/mwa/mwaf.md) files are optional.
-
-For &quot;legacy&quot; MWA data:
-
-```shell
-hyperdrive di-calibrate -d *gpubox*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
-```
-
-or for MWAX:
-
-```shell
-hyperdrive di-calibrate -d *ch???*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
-```
+<div id="admonition-raw-mwa-data" class="admonition example">
+<div class="admonition-title">
+<p>Raw MWA data</p>
+<p><a class="admonition-anchor-link" href="#admonition-raw-mwa-data"></a></p>
+</div>
+<div>
+<p>A <a href="../../defs/mwa/metafits.html">metafits</a> file is always required when reading
+raw MWA data. <a href="../../defs/mwa/mwaf.html"><code>mwaf</code></a> files are optional.</p>
+<p>For &quot;legacy&quot; MWA data:</p>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *gpubox*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
 </code></pre>
-<pre><code class="language-admonish example title=&quot;Measurement sets&quot;">Note that a metafits may not be required, but is generally a good idea.
-
-```shell
-hyperdrive di-calibrate -d *.ms *.metafits -s a_good_sky_model.yaml
-```
+<p>or for MWAX:</p>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *ch???*.fits *.metafits *.mwaf -s a_good_sky_model.yaml
 </code></pre>
-<pre><code class="language-admonish example title=&quot;uvfits&quot;">Note that a metafits may not be required, but is generally a good idea.
-
-```shell
-hyperdrive di-calibrate -d *.uvfits *.metafits -s a_good_sky_model.yaml
-```
+</div>
+</div>
+<div id="admonition-measurement-sets" class="admonition example">
+<div class="admonition-title">
+<p>Measurement sets</p>
+<p><a class="admonition-anchor-link" href="#admonition-measurement-sets"></a></p>
+</div>
+<div>
+<p>Note that a metafits may not be required, but is generally a good idea.</p>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *.ms *.metafits -s a_good_sky_model.yaml
 </code></pre>
+</div>
+</div>
+<div id="admonition-uvfits" class="admonition example">
+<div class="admonition-title">
+<p>uvfits</p>
+<p><a class="admonition-anchor-link" href="#admonition-uvfits"></a></p>
+</div>
+<div>
+<p>Note that a metafits may not be required, but is generally a good idea.</p>
+<pre><code class="language-shell">hyperdrive di-calibrate -d *.uvfits *.metafits -s a_good_sky_model.yaml
+</code></pre>
+</div>
+</div>
 
                     </main>
 

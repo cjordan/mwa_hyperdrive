@@ -151,39 +151,48 @@
 <p>This page describes supported flux-density types within <code>hyperdrive</code>. The
 following pages detail their usage within sky-model source lists. <a href="modelling/estimating.html">This
 page</a> details how each type is estimated in modelling.</p>
-<pre><code class="language-admonish info title=&quot;Power laws and Curved power laws&quot;">Most astrophysical sources are modelled as power laws. These are simply
-described by a reference Stokes \\( \text{I} \\), \\( \text{Q} \\), \\( \text{U}
-\\) and \\( \text{V} \\) flux density at a frequency \\( \nu \\) alongside a
-spectral index \\( \alpha \\).
-
-Curved power laws are formalised in Section 4.1 of [Callingham et al.
-2017](https://ui.adsabs.harvard.edu/abs/2017ApJ...836..174C/abstract). These are
-the same as power laws but with an additional &quot;spectral curvature&quot; parameter \\(
-q \\).
-
-Both kinds of power law flux-density representations are preferred in
-`hyperdrive`.
-</code></pre>
-<pre><code class="language-admonish info title=&quot;Flux density lists&quot;">The list type is simply many instances of a Stokes \\( \text{I} \\), \\(
-\text{Q} \\), \\( \text{U} \\) and \\( \text{V} \\) value at a frequency.
-Example: this source (in the [RTS](source_list_rts.md) style) has 3 defined
-frequencies for flux densities:
-
-```plaintext
-SOURCE J161720+151943 16.2889374 15.32883
+<div id="admonition-power-laws-and-curved-power-laws" class="admonition info">
+<div class="admonition-title">
+<p>Power laws and Curved power laws</p>
+<p><a class="admonition-anchor-link" href="#admonition-power-laws-and-curved-power-laws"></a></p>
+</div>
+<div>
+<p>Most astrophysical sources are modelled as power laws. These are simply
+described by a reference Stokes \( \text{I} \), \( \text{Q} \), \( \text{U}
+\) and \( \text{V} \) flux density at a frequency \( \nu \) alongside a
+spectral index \( \alpha \).</p>
+<p>Curved power laws are formalised in Section 4.1 of <a href="https://ui.adsabs.harvard.edu/abs/2017ApJ...836..174C/abstract">Callingham et al.
+2017</a>. These are
+the same as power laws but with an additional &quot;spectral curvature&quot; parameter \(
+q \).</p>
+<p>Both kinds of power law flux-density representations are preferred in
+<code>hyperdrive</code>.</p>
+</div>
+</div>
+<div id="admonition-flux-density-lists" class="admonition info">
+<div class="admonition-title">
+<p>Flux density lists</p>
+<p><a class="admonition-anchor-link" href="#admonition-flux-density-lists"></a></p>
+</div>
+<div>
+<p>The list type is simply many instances of a Stokes \( \text{I} \), \(
+\text{Q} \), \( \text{U} \) and \( \text{V} \) value at a frequency.
+Example: this source (in the <a href="source_list_rts.html">RTS</a> style) has 3 defined
+frequencies for flux densities:</p>
+<pre><code class="language-plaintext">SOURCE J161720+151943 16.2889374 15.32883
 FREQ 80.0e+6 1.45351 0 0 0
 FREQ 100.0e+6 1.23465 0 0 0
 FREQ 120.0e+6 1.07389 0 0 0
 ENDSOURCE
-```
-
-In this case, Stokes \\( \text{Q} \\), \\( \text{U} \\) and \\( \text{V} \\) are
-all 0 (this is typical), but Stokes \\( \text{I} \\) is 1.45351 Jy at 80 MHz,
-1.23465 Jy at 100 MHz and 1.07389 Jy at 120 MHz. This information can be used to
-estimate flux densities within the defined frequencies (\\( 80 &lt;=
-\nu_{\text{MHz}} &lt;= 120 \\); interpolation) or outside the range (\\(
-\nu_{\text{MHz}} &lt; 80 \\) or \\( \nu_{\text{MHz}} &gt; 120 \\); extrapolation).
 </code></pre>
+<p>In this case, Stokes \( \text{Q} \), \( \text{U} \) and \( \text{V} \) are
+all 0 (this is typical), but Stokes \( \text{I} \) is 1.45351 Jy at 80 MHz,
+1.23465 Jy at 100 MHz and 1.07389 Jy at 120 MHz. This information can be used to
+estimate flux densities within the defined frequencies (\( 80 &lt;=
+\nu_{\text{MHz}} &lt;= 120 \); interpolation) or outside the range (\(
+\nu_{\text{MHz}} &lt; 80 \) or \( \nu_{\text{MHz}} &gt; 120 \); extrapolation).</p>
+</div>
+</div>
 
                     </main>
 

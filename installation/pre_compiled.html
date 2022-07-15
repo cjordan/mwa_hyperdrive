@@ -160,16 +160,21 @@
 the &quot;CUDA-single&quot; release. You can still use the double-precision version on a
 desktop GPU, but it will be much slower than single-precision. Instructions to
 install CUDA are on <a href="from_source.html#cuda">the next page</a>.</p>
-<pre><code class="language-admonish">The pre-compiled binaries are made by GitHub actions using:
-```shell
-cargo build --release --locked --no-default-features --features=hdf5-static,erfa-static,cfitsio-static
-```
-This means they cannot plot calibration solutions.
-&quot;CUDA-double&quot; binaries have the `cuda` feature and &quot;CUDA-single&quot; binaries have
-the `cuda-single` feature. CUDA cannot legally be statically linked so a local
-installation of CUDA is required.
+<div id="admonition-note" class="admonition note">
+<div class="admonition-title">
+<p>Note</p>
+<p><a class="admonition-anchor-link" href="#admonition-note"></a></p>
+</div>
+<div>
+<p>The pre-compiled binaries are made by GitHub actions using:</p>
+<pre><code class="language-shell">cargo build --release --locked --no-default-features --features=hdf5-static,erfa-static,cfitsio-static
 </code></pre>
-
+<p>This means they cannot plot calibration solutions.
+&quot;CUDA-double&quot; binaries have the <code>cuda</code> feature and &quot;CUDA-single&quot; binaries have
+the <code>cuda-single</code> feature. CUDA cannot legally be statically linked so a local
+installation of CUDA is required.</p>
+</div>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

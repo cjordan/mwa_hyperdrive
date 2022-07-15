@@ -163,34 +163,64 @@ pages.</p>
 <p><code>hyperdrive</code> can also convert between formats, although in a &quot;lossy&quot; way;
 non-<code>hyperdrive</code> formats cannot represent all component and/or flux-density
 types.</p>
-<pre><code class="language-admonish info title=&quot;Supported formats&quot;">- [`hyperdrive` format](source_list_hyperdrive.md)
-- [André Offringa (`ao`) format](source_list_ao.md)
-- [`RTS` format](source_list_rts.md)
-</code></pre>
-<pre><code class="language-admonish info title=&quot;Conversion&quot;">`hyperdrive` can convert (as best it can) between different source list formats.
-`hyperdrive srclist-convert` takes the path to input file, and the path to the
+<div id="admonition-supported-formats" class="admonition info">
+<div class="admonition-title">
+<p>Supported formats</p>
+<p><a class="admonition-anchor-link" href="#admonition-supported-formats"></a></p>
+</div>
+<div>
+<ul>
+<li><a href="source_list_hyperdrive.html"><code>hyperdrive</code> format</a></li>
+<li><a href="source_list_ao.html">André Offringa (<code>ao</code>) format</a></li>
+<li><a href="source_list_rts.html"><code>RTS</code> format</a></li>
+</ul>
+</div>
+</div>
+<div id="admonition-conversion" class="admonition info">
+<div class="admonition-title">
+<p>Conversion</p>
+<p><a class="admonition-anchor-link" href="#admonition-conversion"></a></p>
+</div>
+<div>
+<p><code>hyperdrive</code> can convert (as best it can) between different source list formats.
+<code>hyperdrive srclist-convert</code> takes the path to input file, and the path to the
 output file to be written. If it isn't specified, the type of the input file
 will be guessed. Depending on the output file name, the output source list type
-may need to be specified.
-</code></pre>
-<pre><code class="language-admonish info title=&quot;Verification&quot;">`hyperdrive` can be given many source lists in order to test that they are
-correctly read. For each input file, `hyperdrive srclist-verify` will print out
-what kind of source list the file represents (i.e. `hyperdrive`, `ao`, `rts`,
-...) as well as how many sources and components are within the file.
-</code></pre>
-<pre><code class="language-admonish info title=&quot;Component types&quot;">Each component in a sky model is represented in one of three ways:
-
-- point source
-- Gaussian
-- shapelet
-
-Point sources are the simplest. Gaussian sources could be considered the same as
+may need to be specified.</p>
+</div>
+</div>
+<div id="admonition-verification" class="admonition info">
+<div class="admonition-title">
+<p>Verification</p>
+<p><a class="admonition-anchor-link" href="#admonition-verification"></a></p>
+</div>
+<div>
+<p><code>hyperdrive</code> can be given many source lists in order to test that they are
+correctly read. For each input file, <code>hyperdrive srclist-verify</code> will print out
+what kind of source list the file represents (i.e. <code>hyperdrive</code>, <code>ao</code>, <code>rts</code>,
+...) as well as how many sources and components are within the file.</p>
+</div>
+</div>
+<div id="admonition-component-types" class="admonition info">
+<div class="admonition-title">
+<p>Component types</p>
+<p><a class="admonition-anchor-link" href="#admonition-component-types"></a></p>
+</div>
+<div>
+<p>Each component in a sky model is represented in one of three ways:</p>
+<ul>
+<li>point source</li>
+<li>Gaussian</li>
+<li>shapelet</li>
+</ul>
+<p>Point sources are the simplest. Gaussian sources could be considered the same as
 point sources, but have details on their structure (major- and minor-axes,
 position angle). Finally, shapelets are described the same way as Gaussians but
 additionally have multiple &quot;shapelet components&quot;. Examples of each of these
-components can be found on the following documentation pages and in the [examples
-directory](https://github.com/MWATelescope/mwa_hyperdrive/tree/main/examples).
-</code></pre>
+components can be found on the following documentation pages and in the <a href="https://github.com/MWATelescope/mwa_hyperdrive/tree/main/examples">examples
+directory</a>.</p>
+</div>
+</div>
 
                     </main>
 

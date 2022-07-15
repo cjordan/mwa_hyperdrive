@@ -150,44 +150,116 @@
                         <h1 id="installing-hyperdrive-from-source-code"><a class="header" href="#installing-hyperdrive-from-source-code">Installing <code>hyperdrive</code> from source code</a></h1>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
 <p><code>hyperdrive</code> depends on these C libraries:</p>
-<pre><code class="language-admonish example title=&quot;[cfitsio](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/)&quot;">- Ubuntu: `libcfitsio-dev`
-- Arch: `cfitsio`
-- Library and include dirs can be specified manually with `CFITSIO_LIB` and
-  `CFITSIO_INC`
-  - If not specified, `pkg-config` is used to find the library.
-- Can compile statically; use the `cfitsio-static` or `all-static` features.
-  - Requires a C compiler and `autoconf`.
-</code></pre>
-<pre><code class="language-admonish example title=&quot;[ERFA](https://github.com/liberfa/erfa)&quot;">- Ubuntu: `liberfa-dev`
-- Arch: AUR package `erfa`
-- The library dir can be specified manually with `ERFA_LIB`
-  - If not specified, `pkg-config` is used to find the library.
-- Can compile statically; use the `erfa-static` or `all-static` features.
-  - Requires a C compiler and `autoconf`.
-</code></pre>
-<pre><code class="language-admonish example title=&quot;[hdf5](https://www.hdfgroup.org/hdf5)&quot;">- Ubuntu: `libhdf5-dev`
-- Arch: `hdf5`
-- The library dir can be specified manually with `HDF5_DIR`
-  - If not specified, `pkg-config` is used to find the library.
-- Can compile statically; use the `hdf5-static` or `all-static` features.
-  - Requires `CMake` version 3.10 or higher.
-</code></pre>
+<div id="admonition-cfitsiohttpsheasarcgsfcnasagovdocssoftwarefitsio" class="admonition example">
+<div class="admonition-title">
+<p><a href="https://heasarc.gsfc.nasa.gov/docs/software/fitsio/">cfitsio</a></p>
+<p><a class="admonition-anchor-link" href="#admonition-cfitsiohttpsheasarcgsfcnasagovdocssoftwarefitsio"></a></p>
+</div>
+<div>
+<ul>
+<li>Ubuntu: <code>libcfitsio-dev</code></li>
+<li>Arch: <code>cfitsio</code></li>
+<li>Library and include dirs can be specified manually with <code>CFITSIO_LIB</code> and
+<code>CFITSIO_INC</code>
+<ul>
+<li>If not specified, <code>pkg-config</code> is used to find the library.</li>
+</ul>
+</li>
+<li>Can compile statically; use the <code>cfitsio-static</code> or <code>all-static</code> features.
+<ul>
+<li>Requires a C compiler and <code>autoconf</code>.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="admonition-erfahttpsgithubcomliberfaerfa" class="admonition example">
+<div class="admonition-title">
+<p><a href="https://github.com/liberfa/erfa">ERFA</a></p>
+<p><a class="admonition-anchor-link" href="#admonition-erfahttpsgithubcomliberfaerfa"></a></p>
+</div>
+<div>
+<ul>
+<li>Ubuntu: <code>liberfa-dev</code></li>
+<li>Arch: AUR package <code>erfa</code></li>
+<li>The library dir can be specified manually with <code>ERFA_LIB</code>
+<ul>
+<li>If not specified, <code>pkg-config</code> is used to find the library.</li>
+</ul>
+</li>
+<li>Can compile statically; use the <code>erfa-static</code> or <code>all-static</code> features.
+<ul>
+<li>Requires a C compiler and <code>autoconf</code>.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="admonition-hdf5httpswwwhdfgrouporghdf5" class="admonition example">
+<div class="admonition-title">
+<p><a href="https://www.hdfgroup.org/hdf5">hdf5</a></p>
+<p><a class="admonition-anchor-link" href="#admonition-hdf5httpswwwhdfgrouporghdf5"></a></p>
+</div>
+<div>
+<ul>
+<li>Ubuntu: <code>libhdf5-dev</code></li>
+<li>Arch: <code>hdf5</code></li>
+<li>The library dir can be specified manually with <code>HDF5_DIR</code>
+<ul>
+<li>If not specified, <code>pkg-config</code> is used to find the library.</li>
+</ul>
+</li>
+<li>Can compile statically; use the <code>hdf5-static</code> or <code>all-static</code> features.
+<ul>
+<li>Requires <code>CMake</code> version 3.10 or higher.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <h3 id="optional-dependencies"><a class="header" href="#optional-dependencies">Optional dependencies</a></h3>
-<pre><code class="language-admonish tip title=&quot;freetype2 (for calibration solutions plotting)&quot;">- Only needed if the `plotting` feature is enabled (which it is by default)
-- Arch: `pkg-config` `make` `cmake` `freetype2`
-- Ubuntu: `libfreetype-dev` `libexpat1-dev`
-</code></pre>
-<pre><code class="language-admonish tip title=&quot;[CUDA](https://developer.nvidia.com/cuda-zone) (for accelerated sky modelling)&quot;">- Only needed if either the `cuda` or `cuda-single` feature is enabled
-- Arch: `cuda`
-- The library dir can be specified manually with `CUDA_LIB`
-  - If not specified, `/usr/local/cuda` and `/opt/cuda` are searched.
-- Can link statically; use the `cuda-static` or `all-static` features.
-</code></pre>
+<div id="admonition-freetype2-for-calibration-solutions-plotting" class="admonition tip">
+<div class="admonition-title">
+<p>freetype2 (for calibration solutions plotting)</p>
+<p><a class="admonition-anchor-link" href="#admonition-freetype2-for-calibration-solutions-plotting"></a></p>
+</div>
+<div>
+<ul>
+<li>Only needed if the <code>plotting</code> feature is enabled (which it is by default)</li>
+<li>Arch: <code>pkg-config</code> <code>make</code> <code>cmake</code> <code>freetype2</code></li>
+<li>Ubuntu: <code>libfreetype-dev</code> <code>libexpat1-dev</code></li>
+</ul>
+</div>
+</div>
+<div id="admonition-cudahttpsdevelopernvidiacomcuda-zone-for-accelerated-sky-modelling" class="admonition tip">
+<div class="admonition-title">
+<p><a href="https://developer.nvidia.com/cuda-zone">CUDA</a> (for accelerated sky modelling)</p>
+<p><a class="admonition-anchor-link" href="#admonition-cudahttpsdevelopernvidiacomcuda-zone-for-accelerated-sky-modelling"></a></p>
+</div>
+<div>
+<ul>
+<li>Only needed if either the <code>cuda</code> or <code>cuda-single</code> feature is enabled</li>
+<li>Arch: <code>cuda</code></li>
+<li>The library dir can be specified manually with <code>CUDA_LIB</code>
+<ul>
+<li>If not specified, <code>/usr/local/cuda</code> and <code>/opt/cuda</code> are searched.</li>
+</ul>
+</li>
+<li>Can link statically; use the <code>cuda-static</code> or <code>all-static</code> features.</li>
+</ul>
+</div>
+</div>
 <h2 id="installing-rust"><a class="header" href="#installing-rust">Installing Rust</a></h2>
-<pre><code class="language-admonish tip title=&quot;TL;DR&quot;">```shell
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+<div id="admonition-tldr" class="admonition tip">
+<div class="admonition-title">
+<p>TL;DR</p>
+<p><a class="admonition-anchor-link" href="#admonition-tldr"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 </code></pre>
+</div>
+</div>
 <p><code>hyperdrive</code> is written in <a href="https://www.rust-lang.org/">Rust</a>, so a Rust
 environment is required. <a href="https://doc.rust-lang.org/book/ch01-01-installation.html">The Rust
 book</a> has excellent
@@ -206,63 +278,74 @@ information to do this. Similar, perhaps more direct information is
 <p>This will install <code>hyperdrive</code> to <code>~/.cargo/bin/hyperdrive</code>. This binary can be
 moved anywhere and it will still work. The installation destination can be
 changed by setting <code>CARGO_HOME</code>.</p>
-<pre><code class="language-admonish danger title=&quot;CUDA&quot;">Do you have a CUDA-capable NVIDIA GPU? Ensure you have installed
-[CUDA](https://developer.nvidia.com/cuda-zone) (instructions are above), find
+<div id="admonition-cuda" class="admonition danger">
+<div class="admonition-title">
+<p>CUDA</p>
+<p><a class="admonition-anchor-link" href="#admonition-cuda"></a></p>
+</div>
+<div>
+<p>Do you have a CUDA-capable NVIDIA GPU? Ensure you have installed
+<a href="https://developer.nvidia.com/cuda-zone">CUDA</a> (instructions are above), find
 your CUDA device's compute capability
-[here](https://developer.nvidia.com/cuda-gpus) (e.g. Geforce RTX 2070 is 7.5),
+<a href="https://developer.nvidia.com/cuda-gpus">here</a> (e.g. Geforce RTX 2070 is 7.5),
 and set a variable with this information (note the lack of a period in the
-number):
-
-```shell
-export HYPERDRIVE_CUDA_COMPUTE=75
-```
-
-Now you can compile `hyperdrive` with CUDA enabled (single-precision floats):
-
-```shell
-cargo install --path . --locked --features=cuda-single
-```
-
-If you're using &quot;datacentre&quot; products (e.g. a V100 available on the
+number):</p>
+<pre><code class="language-shell">export HYPERDRIVE_CUDA_COMPUTE=75
+</code></pre>
+<p>Now you can compile <code>hyperdrive</code> with CUDA enabled (single-precision floats):</p>
+<pre><code class="language-shell">cargo install --path . --locked --features=cuda-single
+</code></pre>
+<p>If you're using &quot;datacentre&quot; products (e.g. a V100 available on the
 Pawsey-hosted supercomputer &quot;garrawarla&quot;), you probably want double-precision
-floats:
-
-```shell
-cargo install --path . --locked --features=cuda
-```
-
-You can still compile with double-precision on a desktop GPU, but it will be
-much slower than single-precision.
+floats:</p>
+<pre><code class="language-shell">cargo install --path . --locked --features=cuda
 </code></pre>
-<pre><code class="language-admonish tip title=&quot;Static dependencies&quot;">The aforementioned C libraries can each be compiled by `cargo`. `all-static`
+<p>You can still compile with double-precision on a desktop GPU, but it will be
+much slower than single-precision.</p>
+</div>
+</div>
+<div id="admonition-static-dependencies" class="admonition tip">
+<div class="admonition-title">
+<p>Static dependencies</p>
+<p><a class="admonition-anchor-link" href="#admonition-static-dependencies"></a></p>
+</div>
+<div>
+<p>The aforementioned C libraries can each be compiled by <code>cargo</code>. <code>all-static</code>
 will statically-link all dependencies (including CUDA, if CUDA is enabled) such
-that **you need not have these libraries available to use `hyperdrive`**.
+that <strong>you need not have these libraries available to use <code>hyperdrive</code></strong>.
 Individual dependencies can be statically compiled and linked, e.g.
-`cfitsio-static`. See the dependencies list above for more information.
+<code>cfitsio-static</code>. See the dependencies list above for more information.</p>
+</div>
+</div>
+<div id="admonition-multiple-features" class="admonition info">
+<div class="admonition-title">
+<p>Multiple features</p>
+<p><a class="admonition-anchor-link" href="#admonition-multiple-features"></a></p>
+</div>
+<div>
+<p><code>cargo</code> features can be chained in a comma-separated list:</p>
+<pre><code class="language-shell">cargo install --path . --locked --features=cuda,all-static
 </code></pre>
-<pre><code class="language-admonish info title=&quot;Multiple features&quot;">`cargo` features can be chained in a comma-separated list:
-
-```shell
-cargo install --path . --locked --features=cuda,all-static
-```
+</div>
+</div>
+<div id="admonition-troubleshooting" class="admonition question">
+<div class="admonition-title">
+<p>Troubleshooting</p>
+<p><a class="admonition-anchor-link" href="#admonition-troubleshooting"></a></p>
+</div>
+<div>
+<p>If you're having problems compiling, it's possible you have an older Rust
+toolchain installed. Try updating it:</p>
+<pre><code class="language-shell">rustup update
 </code></pre>
-<pre><code class="language-admonish help title=&quot;Troubleshooting&quot;">If you're having problems compiling, it's possible you have an older Rust
-toolchain installed. Try updating it:
-
-```shell
-rustup update
-```
-
-If that doesn't help, try cleaning the local build directories:
-
-```shell
-cargo clean
-```
-
-and try compiling again. If you're still having problems, raise a [GitHub
-issue](https://github.com/MWATelescope/mwa_hyperdrive/issues) describing your
-system and what you've tried.
+<p>If that doesn't help, try cleaning the local build directories:</p>
+<pre><code class="language-shell">cargo clean
 </code></pre>
+<p>and try compiling again. If you're still having problems, raise a <a href="https://github.com/MWATelescope/mwa_hyperdrive/issues">GitHub
+issue</a> describing your
+system and what you've tried.</p>
+</div>
+</div>
 
                     </main>
 

@@ -148,31 +148,61 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="simple-usage-of-solutions-apply"><a class="header" href="#simple-usage-of-solutions-apply">Simple usage of solutions apply</a></h1>
-<pre><code class="language-admonish info">Use the `solutions-apply` subcommand, i.e.
-
-```shell
-hyperdrive solutions-apply
-```
-
-At the very least, this requires:
-- Input data (with the flag `-d`)
-  - [Supported formats](../../defs/vis_formats_read.md)
-- Calibration solutions (with the flag `-s`)
-  - [Supported formats](../../defs/cal_sols.md)
+<div id="admonition-info" class="admonition info">
+<div class="admonition-title">
+<p>Info</p>
+<p><a class="admonition-anchor-link" href="#admonition-info"></a></p>
+</div>
+<div>
+<p>Use the <code>solutions-apply</code> subcommand, i.e.</p>
+<pre><code class="language-shell">hyperdrive solutions-apply
 </code></pre>
+<p>At the very least, this requires:</p>
+<ul>
+<li>Input data (with the flag <code>-d</code>)
+<ul>
+<li><a href="../../defs/vis_formats_read.html">Supported formats</a></li>
+</ul>
+</li>
+<li>Calibration solutions (with the flag <code>-s</code>)
+<ul>
+<li><a href="../../defs/cal_sols.html">Supported formats</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
-<pre><code class="language-admonish example title=&quot;From raw MWA data&quot;">```shell
-hyperdrive solutions-apply -d *gpubox*.fits *.metafits *.mwaf -s hyp_sols.fits -o hyp_cal.ms
-```
+<div id="admonition-from-raw-mwa-data" class="admonition example">
+<div class="admonition-title">
+<p>From raw MWA data</p>
+<p><a class="admonition-anchor-link" href="#admonition-from-raw-mwa-data"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">hyperdrive solutions-apply -d *gpubox*.fits *.metafits *.mwaf -s hyp_sols.fits -o hyp_cal.ms
 </code></pre>
-<pre><code class="language-admonish example title=&quot;From an uncalibrated measurement set&quot;">```shell
-hyperdrive solutions-apply -d *.ms -s hyp_sols.fits -o hyp_cal.ms
-```
+</div>
+</div>
+<div id="admonition-from-an-uncalibrated-measurement-set" class="admonition example">
+<div class="admonition-title">
+<p>From an uncalibrated measurement set</p>
+<p><a class="admonition-anchor-link" href="#admonition-from-an-uncalibrated-measurement-set"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">hyperdrive solutions-apply -d *.ms -s hyp_sols.fits -o hyp_cal.ms
 </code></pre>
-<pre><code class="language-admonish example title=&quot;From an uncalibrated uvfits&quot;">```shell
-hyperdrive solutions-apply -d *.uvfits -s hyp_sols.fits -o hyp_cal.ms
-```
+</div>
+</div>
+<div id="admonition-from-an-uncalibrated-uvfits" class="admonition example">
+<div class="admonition-title">
+<p>From an uncalibrated uvfits</p>
+<p><a class="admonition-anchor-link" href="#admonition-from-an-uncalibrated-uvfits"></a></p>
+</div>
+<div>
+<pre><code class="language-shell">hyperdrive solutions-apply -d *.uvfits -s hyp_sols.fits -o hyp_cal.ms
 </code></pre>
+</div>
+</div>
 <p>Generally the syntax is the same as <a href="../di_cal/simple.html"><code>di-calibrate</code></a>.</p>
 
                     </main>
