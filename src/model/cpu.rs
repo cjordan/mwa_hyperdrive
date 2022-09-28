@@ -9,6 +9,7 @@ use std::f64::consts::{FRAC_PI_2, LN_2};
 
 use hifitime::{Duration, Epoch};
 use marlu::{
+    c64,
     pos::xyz::xyzs_to_cross_uvws_parallel,
     precession::{get_lmst, precess_time},
     Complex, Jones, RADec, XyzGeodetic, UVW,
@@ -16,12 +17,12 @@ use marlu::{
 use ndarray::{parallel::prelude::*, prelude::*};
 
 use crate::{
+    beam::{Beam, BeamError},
     constants::*,
     math::{cexp, exp},
+    shapelets,
+    srclist::{ComponentList, GaussianParams, PerComponentParams},
 };
-use mwa_hyperdrive_beam::{Beam, BeamError};
-use mwa_hyperdrive_common::{hifitime, marlu, ndarray, shapelets};
-use mwa_hyperdrive_srclist::{ComponentList, GaussianParams, PerComponentParams};
 
 const GAUSSIAN_EXP_CONST: f64 = -(FRAC_PI_2 * FRAC_PI_2) / LN_2;
 
@@ -404,6 +405,13 @@ impl<'a> SkyModellerCpu<'a> {
             "fds.len_of(Axis(1)) != shapelet_uvws.len_of(Axis(1))"
         );
 
+        const I_POWER_TABLE: [c64; 4] = [
+            c64::new(1.0, 0.0),
+            c64::new(0.0, 1.0),
+            c64::new(-1.0, 0.0),
+            c64::new(0.0, -1.0),
+        ];
+
         // Get beam-attenuated flux densities.
         let num_tiles = self.beam.get_num_tiles();
         let mut beam_responses =
@@ -510,7 +518,7 @@ impl<'a> SkyModellerCpu<'a> {
                                                             * (y_pos - y_pos.floor());
 
                                                     envelope_acc
-                                                        + shapelets::I_POWER_TABLE.get_unchecked(
+                                                        + I_POWER_TABLE.get_unchecked(
                                                             (coeff.n1 + coeff.n2) % 4,
                                                         ) * f_hat
                                                             * u_value

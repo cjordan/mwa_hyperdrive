@@ -7,8 +7,6 @@
 use mwalib::fitsio;
 use thiserror::Error;
 
-use mwa_hyperdrive_common::{mwalib, thiserror};
-
 #[derive(Error, Debug)]
 pub(crate) enum CalibrateError {
     #[error("Insufficient memory available to perform calibration; need {need_gib} GiB of memory.\nYou could try using fewer timesteps and channels.")]
@@ -20,7 +18,7 @@ pub(crate) enum CalibrateError {
     TimestepUnavailable { timestep: usize },
 
     #[error(transparent)]
-    ArgFile(#[from] super::args::CalibrateArgsFileError),
+    ArgFile(#[from] crate::cli::calibrate::di::CalibrateArgsFileError),
 
     #[error(transparent)]
     InvalidArgs(#[from] super::params::InvalidArgsError),
@@ -32,16 +30,16 @@ pub(crate) enum CalibrateError {
     SolutionsWrite(#[from] crate::solutions::SolutionsWriteError),
 
     #[error(transparent)]
-    Beam(#[from] mwa_hyperdrive_beam::BeamError),
-
-    #[error(transparent)]
-    Fitsio(#[from] fitsio::errors::Error),
+    Beam(#[from] crate::beam::BeamError),
 
     #[error(transparent)]
     VisRead(#[from] crate::vis_io::read::VisReadError),
 
     #[error(transparent)]
     VisWrite(#[from] crate::vis_io::write::VisWriteError),
+
+    #[error(transparent)]
+    Fitsio(#[from] fitsio::errors::Error),
 
     #[error(transparent)]
     IO(#[from] std::io::Error),

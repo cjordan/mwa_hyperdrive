@@ -15,10 +15,12 @@ mod tests;
 
 pub(crate) use error::*;
 
-use std::collections::{HashMap, HashSet};
-use std::ops::Deref;
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Deref,
+    path::PathBuf,
+    str::FromStr,
+};
 
 use hifitime::Duration;
 use itertools::Itertools;
@@ -27,23 +29,27 @@ use marlu::{
     pos::{precession::precess_time, xyz::xyzs_to_cross_uvws_parallel},
     Jones, LatLngHeight, XyzGeodetic,
 };
-use ndarray::ArrayViewMut2;
+use ndarray::prelude::*;
 use rayon::prelude::*;
 use vec1::Vec1;
 
-use super::CalibrateUserArgs;
 use crate::{
     averaging::{
         channels_to_chanblocks, parse_freq_average_factor, parse_time_average_factor,
         timesteps_to_timeblocks, AverageFactorError, Fence, Timeblock,
     },
+    beam::{create_fee_beam_object, create_no_beam_object, Beam, Delays},
+    calibrate::di::{calibrate_timeblocks, get_cal_vis, CalVis},
+    cli::calibrate::di::CalibrateUserArgs,
+    constants::{DEFAULT_CUTOFF_DISTANCE, DEFAULT_VETO_THRESHOLD},
     context::ObsContext,
     filenames::InputDataTypes,
     glob::*,
     math::TileBaselineMaps,
     messages,
     model::ModellerInfo,
-    solutions::CalSolutionType,
+    solutions::{CalSolutionType, CalibrationSolutions},
+    srclist::{read::read_source_list_file, veto_sources, SourceList, SourceListType},
     unit_parsing::{parse_wavelength, WavelengthUnit},
     vis_io::{
         read::{
@@ -53,14 +59,9 @@ use crate::{
         write::{can_write_to_file, VisOutputType},
     },
 };
-use mwa_hyperdrive_beam::{create_fee_beam_object, create_no_beam_object, Beam, Delays};
-use mwa_hyperdrive_common::{hifitime, itertools, log, marlu, ndarray, rayon, vec1};
-use mwa_hyperdrive_srclist::{
-    veto_sources, SourceList, SourceListType, DEFAULT_CUTOFF_DISTANCE, DEFAULT_VETO_THRESHOLD,
-};
 
 /// Parameters needed to perform calibration.
-pub struct CalibrateParams {
+pub(crate) struct CalibrateParams {
     /// Interface to the MWA data, and metadata on the input data.
     pub(crate) input_data: Box<dyn VisRead>,
 
@@ -274,7 +275,7 @@ impl CalibrateParams {
             ModellerInfo::Cpu
         } else {
             let (device_info, driver_info) =
-                mwa_hyperdrive_cuda::get_device_info().map_err(InvalidArgsError::CudaError)?;
+                crate::cuda::get_device_info().map_err(InvalidArgsError::CudaError)?;
             ModellerInfo::Cuda {
                 device_info,
                 driver_info,
@@ -717,7 +718,7 @@ impl CalibrateParams {
                 // Defaults.
                 None => {
                     let pb =
-                        PathBuf::from(crate::calibrate::args::DEFAULT_OUTPUT_SOLUTIONS_FILENAME);
+                        PathBuf::from(crate::cli::calibrate::di::DEFAULT_OUTPUT_SOLUTIONS_FILENAME);
                     let sol_type = pb
                         .extension()
                         .and_then(|os_str| os_str.to_str())
@@ -880,7 +881,7 @@ impl CalibrateParams {
             let (quantity, unit) = parse_wavelength(
                 uvw_min
                     .as_deref()
-                    .unwrap_or(crate::calibrate::args::DEFAULT_UVW_MIN),
+                    .unwrap_or(crate::cli::calibrate::di::DEFAULT_UVW_MIN),
             )
             .map_err(InvalidArgsError::ParseUvwMin)?;
             match unit {
@@ -928,14 +929,14 @@ impl CalibrateParams {
 
         // Make sure the calibration thresholds are sensible.
         let mut stop_threshold =
-            stop_thresh.unwrap_or(crate::calibrate::args::DEFAULT_STOP_THRESHOLD);
-        let min_threshold = min_thresh.unwrap_or(crate::calibrate::args::DEFAULT_MIN_THRESHOLD);
+            stop_thresh.unwrap_or(crate::cli::calibrate::di::DEFAULT_STOP_THRESHOLD);
+        let min_threshold = min_thresh.unwrap_or(crate::cli::calibrate::di::DEFAULT_MIN_THRESHOLD);
         if stop_threshold > min_threshold {
             warn!("Specified stop threshold ({}) is bigger than the min. threshold ({}); capping the stop threshold.", stop_threshold, min_threshold);
             stop_threshold = min_threshold;
         }
         let max_iterations =
-            max_iterations.unwrap_or(crate::calibrate::args::DEFAULT_MAX_ITERATIONS);
+            max_iterations.unwrap_or(crate::cli::calibrate::di::DEFAULT_MAX_ITERATIONS);
 
         messages::CalibrationDetails {
             timesteps_per_timeblock: time_average_factor,
@@ -975,11 +976,10 @@ impl CalibrateParams {
             // kinds.
             let sl_type_specified = source_list_type.is_none();
             let sl_type = source_list_type.and_then(|t| SourceListType::from_str(t.as_ref()).ok());
-            let (sl, sl_type) =
-                match mwa_hyperdrive_srclist::read::read_source_list_file(&sl_pb, sl_type) {
-                    Ok((sl, sl_type)) => (sl, sl_type),
-                    Err(e) => return Err(InvalidArgsError::from(e)),
-                };
+            let (sl, sl_type) = match read_source_list_file(&sl_pb, sl_type) {
+                Ok((sl, sl_type)) => (sl, sl_type),
+                Err(e) => return Err(InvalidArgsError::from(e)),
+            };
 
             // If the user didn't specify the source list type, then print out
             // what we found.
@@ -1181,5 +1181,56 @@ impl CalibrateParams {
             &self.tile_to_unflagged_cross_baseline_map,
             &self.flagged_fine_chans,
         )
+    }
+
+    /// Use the [`CalibrateParams`] to perform calibration and obtain solutions.
+    pub(crate) fn calibrate(&self) -> Result<CalibrationSolutions, super::CalibrateError> {
+        // TODO: Fix.
+        if self.freq_average_factor > 1 {
+            panic!("Frequency averaging isn't working right now. Sorry!");
+        }
+
+        let CalVis {
+            vis_data,
+            vis_weights,
+            vis_model,
+        } = get_cal_vis(self, !self.no_progress_bars)?;
+        assert_eq!(vis_weights.len_of(Axis(1)), self.baseline_weights.len());
+
+        // The shape of the array containing output Jones matrices.
+        let num_timeblocks = self.timeblocks.len();
+        let num_chanblocks = self.fences.first().chanblocks.len();
+        let num_unflagged_tiles = self.get_num_unflagged_tiles();
+
+        if log_enabled!(Debug) {
+            let shape = (num_timeblocks, num_unflagged_tiles, num_chanblocks);
+            debug!(
+            "Shape of DI Jones matrices array: ({} timeblocks, {} tiles, {} chanblocks; {} MiB)",
+            shape.0,
+            shape.1,
+            shape.2,
+            shape.0 * shape.1 * shape.2 * std::mem::size_of::<Jones<f64>>()
+            // 1024 * 1024 == 1 MiB.
+            / 1024 / 1024
+        );
+        }
+
+        let (sols, results) = calibrate_timeblocks(
+            vis_data.view(),
+            vis_model.view(),
+            &self.timeblocks,
+            // TODO: Picket fences.
+            &self.fences.first().chanblocks,
+            self.max_iterations,
+            self.stop_threshold,
+            self.min_threshold,
+            !self.no_progress_bars,
+            true,
+        );
+
+        // "Complete" the solutions.
+        let sols = sols.into_cal_sols(self, Some(results.map(|r| r.max_precision)));
+
+        Ok(sols)
     }
 }

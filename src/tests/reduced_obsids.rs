@@ -7,12 +7,12 @@
 //! perform units tests without requiring MWA data for a full observation.
 
 use super::*;
-use crate::calibrate::args::CalibrateUserArgs;
+use crate::cli::calibrate::di::CalibrateUserArgs;
 
 /// Get the calibration arguments associated with the obsid 1090008640 (raw MWA
 /// data). This observational data is inside the hyperdrive git repo, but has
 /// been reduced; there is only 1 coarse channel and 1 timestep.
-pub(crate) fn get_reduced_1090008640(include_mwaf: bool) -> CalibrateUserArgs {
+pub(crate) fn get_reduced_1090008640(use_fee_beam: bool, include_mwaf: bool) -> CalibrateUserArgs {
     // Use absolute paths.
     let test_files = PathBuf::from("test_files/1090008640")
         .canonicalize()
@@ -51,7 +51,7 @@ pub(crate) fn get_reduced_1090008640(include_mwaf: bool) -> CalibrateUserArgs {
     CalibrateUserArgs {
         data: Some(data),
         source_list: Some(srclist),
-        no_beam: true,
+        no_beam: !use_fee_beam,
         ..Default::default()
     }
 }

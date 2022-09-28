@@ -4,24 +4,27 @@
 
 //! Tests against calibration parameters and converting arguments to parameters.
 
-use approx::{assert_abs_diff_eq, AbsDiffEq};
+use approx::assert_abs_diff_eq;
 use marlu::{
     constants::{MWA_HEIGHT_M, MWA_LAT_DEG, MWA_LONG_DEG},
     LatLngHeight,
 };
-use mwa_hyperdrive_beam::BeamType;
 
 use super::InvalidArgsError::{
     BadArrayPosition, BadDelays, CalFreqFactorNotInteger, CalFreqResNotMultiple,
     CalTimeFactorNotInteger, CalTimeResNotMultiple, CalibrationOutputFile, InvalidDataInput,
     MultipleMeasurementSets, MultipleMetafits, MultipleUvfits, NoInputData,
 };
-use crate::tests::reduced_obsids::*;
-use mwa_hyperdrive_common::marlu;
+use crate::{
+    beam::BeamType,
+    tests::reduced_obsids::{
+        get_reduced_1090008640, get_reduced_1090008640_ms, get_reduced_1090008640_uvfits,
+    },
+};
 
 #[test]
 fn test_new_params_defaults() {
-    let args = get_reduced_1090008640(true);
+    let args = get_reduced_1090008640(false, true);
     let params = args.into_params().unwrap();
     let obs_context = params.get_obs_context();
     // The default time resolution should be 2.0s, as per the metafits.
@@ -42,7 +45,7 @@ fn test_new_params_defaults() {
 
 #[test]
 fn test_new_params_no_input_flags() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.ignore_input_data_tile_flags = true;
     args.ignore_input_data_fine_channel_flags = true;
     let params = args.into_params().unwrap();
@@ -59,25 +62,25 @@ fn test_new_params_no_input_flags() {
 #[test]
 fn test_new_params_time_averaging() {
     // The native time resolution is 2.0s.
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 1 is a valid time average factor.
     args.timesteps_per_timeblock = Some("1".to_string());
     let result = args.into_params();
     assert!(result.is_ok());
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 2 is a valid time average factor.
     args.timesteps_per_timeblock = Some("2".to_string());
     let result = args.into_params();
     assert!(result.is_ok());
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 4.0s should be a multiple of 2.0s
     args.timesteps_per_timeblock = Some("4.0s".to_string());
     let result = args.into_params();
     assert!(result.is_ok());
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 8.0s should be a multiple of 2.0s
     args.timesteps_per_timeblock = Some("8.0s".to_string());
     let result = args.into_params();
@@ -87,21 +90,21 @@ fn test_new_params_time_averaging() {
 #[test]
 fn test_new_params_time_averaging_fail() {
     // The native time resolution is 2.0s.
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 1.5 is an invalid time average factor.
     args.timesteps_per_timeblock = Some("1.5".to_string());
     let result = args.into_params();
     assert!(result.is_err());
     assert!(matches!(result, Err(CalTimeFactorNotInteger)));
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 2.01s is not a multiple of 2.0s
     args.timesteps_per_timeblock = Some("2.01s".to_string());
     let result = args.into_params();
     assert!(result.is_err());
     assert!(matches!(result, Err(CalTimeResNotMultiple { .. })));
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 3.0s is not a multiple of 2.0s
     args.timesteps_per_timeblock = Some("3.0s".to_string());
     let result = args.into_params();
@@ -112,19 +115,19 @@ fn test_new_params_time_averaging_fail() {
 #[test]
 fn test_new_params_freq_averaging() {
     // The native freq. resolution is 40kHz.
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 3 is a valid freq average factor.
     args.freq_average_factor = Some("3".to_string());
     let result = args.into_params();
     assert!(result.is_ok());
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 80kHz should be a multiple of 40kHz
     args.freq_average_factor = Some("80kHz".to_string());
     let result = args.into_params();
     assert!(result.is_ok());
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 200kHz should be a multiple of 40kHz
     args.freq_average_factor = Some("200kHz".to_string());
     let result = args.into_params();
@@ -134,21 +137,21 @@ fn test_new_params_freq_averaging() {
 #[test]
 fn test_new_params_freq_averaging_fail() {
     // The native freq. resolution is 40kHz.
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 1.5 is an invalid freq average factor.
     args.freq_average_factor = Some("1.5".to_string());
     let result = args.into_params();
     assert!(result.is_err());
     assert!(matches!(result, Err(CalFreqFactorNotInteger)));
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 10kHz is not a multiple of 40kHz
     args.freq_average_factor = Some("10kHz".to_string());
     let result = args.into_params();
     assert!(result.is_err());
     assert!(matches!(result, Err(CalFreqResNotMultiple { .. })));
 
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // 79kHz is not a multiple of 40kHz
     args.freq_average_factor = Some("79kHz".to_string());
     let result = args.into_params();
@@ -159,7 +162,7 @@ fn test_new_params_freq_averaging_fail() {
 #[test]
 fn test_new_params_tile_flags() {
     // 1090008640 has no flagged tiles in its metafits.
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     // Manually flag antennas 1, 2 and 3.
     args.tile_flags = Some(vec!["1".to_string(), "2".to_string(), "3".to_string()]);
     let params = match args.into_params() {
@@ -180,7 +183,7 @@ fn test_new_params_tile_flags() {
 
 #[test]
 fn test_handle_delays() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.no_beam = false;
     // only 3 delays instead of 16 expected
     args.delays = Some((0..3).collect::<Vec<u32>>());
@@ -215,7 +218,7 @@ fn test_handle_delays() {
 
 #[test]
 fn test_unity_dipole_gains() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.no_beam = false;
     let params = args.clone().into_params().unwrap();
 
@@ -247,7 +250,7 @@ fn test_unity_dipole_gains() {
 
 #[test]
 fn test_handle_no_input() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.data = None;
     let result = args.into_params();
 
@@ -258,7 +261,7 @@ fn test_handle_no_input() {
 #[test]
 fn test_handle_multiple_metafits() {
     // when reading raw
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.data
         .as_mut()
         .unwrap()
@@ -319,7 +322,7 @@ fn test_handle_multiple_uvfits() {
 
 #[test]
 fn test_handle_only_metafits() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.data = Some(vec!["test_files/1090008640/1090008640.metafits".into()]);
     let result = args.into_params();
 
@@ -329,7 +332,7 @@ fn test_handle_only_metafits() {
 
 #[test]
 fn test_handle_invalid_output() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     args.outputs = Some(vec!["invalid.out".into()]);
     let result = args.into_params();
 
@@ -337,50 +340,26 @@ fn test_handle_invalid_output() {
     assert!(matches!(result, Err(CalibrationOutputFile { .. })));
 }
 
-#[derive(PartialEq, Debug)]
-pub(crate) struct TestLatLngHeight(LatLngHeight);
-
-impl From<LatLngHeight> for TestLatLngHeight {
-    fn from(other: LatLngHeight) -> Self {
-        Self(other)
-    }
-}
-
-#[cfg(test)]
-impl AbsDiffEq for TestLatLngHeight {
-    type Epsilon = f64;
-
-    fn default_epsilon() -> f64 {
-        f64::EPSILON
-    }
-
-    fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
-        f64::abs_diff_eq(&self.0.longitude_rad, &other.0.longitude_rad, epsilon)
-            && f64::abs_diff_eq(&self.0.latitude_rad, &other.0.latitude_rad, epsilon)
-            && f64::abs_diff_eq(&self.0.height_metres, &other.0.height_metres, epsilon)
-    }
-}
-
 #[test]
 fn test_handle_array_pos() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     let expected = vec![MWA_LONG_DEG + 1.0, MWA_LAT_DEG + 1.0, MWA_HEIGHT_M + 1.0];
     args.array_position = Some(expected.clone());
     let result = args.into_params().unwrap();
 
     assert_abs_diff_eq!(
-        TestLatLngHeight::from(result.array_position),
-        TestLatLngHeight::from(LatLngHeight {
+        result.array_position,
+        LatLngHeight {
             longitude_rad: expected[0].to_radians(),
             latitude_rad: expected[1].to_radians(),
             height_metres: expected[2]
-        })
+        }
     );
 }
 
 #[test]
 fn test_handle_bad_array_pos() {
-    let mut args = get_reduced_1090008640(true);
+    let mut args = get_reduced_1090008640(false, true);
     let expected = vec![MWA_LONG_DEG + 1.0, MWA_LAT_DEG + 1.0];
     args.array_position = Some(expected);
     let result = args.into_params();

@@ -7,18 +7,16 @@
 
 use thiserror::Error;
 
-use mwa_hyperdrive_common::thiserror;
-use mwa_hyperdrive_srclist::SrclistError;
-
 use crate::{
     calibrate::{params::InvalidArgsError, CalibrateError},
-    filenames::InputFileError,
-    solutions::{
-        apply::SolutionsApplyError, plot::SolutionsPlotError, SolutionsReadError,
-        SolutionsWriteError,
+    cli::{
+        solutions::{apply::SolutionsApplyError, plot::SolutionsPlotError},
+        vis_utils::{simulate::VisSimulateError, subtract::VisSubtractError},
     },
+    filenames::InputFileError,
+    solutions::{SolutionsReadError, SolutionsWriteError},
+    srclist::SrclistError,
     vis_io::read::VisReadError,
-    vis_utils::{simulate::VisSimulateError, subtract::VisSubtractError},
 };
 
 const URL: &str = "https://MWATelescope.github.io/mwa_hyperdrive";
@@ -272,7 +270,7 @@ impl From<SrclistError> for HyperdriveError {
         let s = e.to_string();
         match e {
             SrclistError::NoSourcesAfterVeto
-            | SrclistError::SourceList(_)
+            | SrclistError::ReadSourceList(_)
             | SrclistError::WriteSourceList(_)
             | SrclistError::Veto(_) => Self::Srclist(s),
             SrclistError::MissingMetafits => Self::Metafits(s),

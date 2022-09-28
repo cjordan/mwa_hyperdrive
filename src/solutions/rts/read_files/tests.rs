@@ -11,7 +11,6 @@ use indoc::indoc;
 use marlu::c64;
 
 use super::*;
-use mwa_hyperdrive_common::marlu;
 
 #[test]
 fn test_read_di_jm() {

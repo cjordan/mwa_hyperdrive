@@ -10,7 +10,6 @@ use thiserror::Error;
 use vec1::Vec1;
 
 use crate::filenames::SUPPORTED_INPUT_FILE_COMBINATIONS;
-use mwa_hyperdrive_common::{thiserror, vec1};
 
 /// Errors associated with setting up [super::CalibrateParams].
 #[derive(Error, Debug)]
@@ -66,14 +65,14 @@ pub(crate) enum InvalidArgsError {
     UnavailableTimestep { got: usize, last: usize },
 
     #[error(
-        "Cannot write visibilities to a file type '{ext}'. Supported formats are: {}", *crate::help_texts::VIS_OUTPUT_EXTENSIONS
+        "Cannot write visibilities to a file type '{ext}'. Supported formats are: {}", *crate::vis_io::write::VIS_OUTPUT_EXTENSIONS
     )]
     VisFileType { ext: String },
 
     #[error(transparent)]
     TileFlag(#[from] crate::context::InvalidTileFlag),
 
-    #[error("Cannot write calibration solutions to a file type '{ext}'.\nSupported formats are: {}", *crate::calibrate::args::CAL_SOLUTION_EXTENSIONS)]
+    #[error("Cannot write calibration solutions to a file type '{ext}'.\nSupported formats are: {}", *crate::solutions::CAL_SOLUTION_EXTENSIONS)]
     CalibrationOutputFile { ext: String },
 
     #[error(transparent)]
@@ -150,13 +149,13 @@ pub(crate) enum InvalidArgsError {
     FileWrite(#[from] crate::vis_io::write::FileWriteError),
 
     #[error(transparent)]
-    Veto(#[from] mwa_hyperdrive_srclist::VetoError),
+    Veto(#[from] crate::srclist::VetoError),
 
     #[error("Error when trying to read source list: {0}")]
-    SourceList(#[from] mwa_hyperdrive_srclist::read::SourceListError),
+    SourceList(#[from] crate::srclist::ReadSourceListError),
 
     #[error(transparent)]
-    Beam(#[from] mwa_hyperdrive_beam::BeamError),
+    Beam(#[from] crate::beam::BeamError),
 
     #[error(transparent)]
     IO(#[from] std::io::Error),

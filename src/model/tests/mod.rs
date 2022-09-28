@@ -22,10 +22,11 @@ use vec1::vec1;
 use super::*;
 #[cfg(feature = "cuda")]
 use crate::model::cuda::SkyModellerCuda;
-use mwa_hyperdrive_beam::{create_fee_beam_object, create_no_beam_object};
-use mwa_hyperdrive_common::{marlu, ndarray, vec1};
-use mwa_hyperdrive_srclist::{
-    ComponentType, FluxDensity, FluxDensityType, ShapeletCoeff, SourceComponent, SourceList,
+use crate::{
+    beam::{create_fee_beam_object, create_no_beam_object, Delays},
+    srclist::{
+        ComponentType, FluxDensity, FluxDensityType, ShapeletCoeff, SourceComponent, SourceList,
+    },
 };
 
 fn get_list() -> FluxDensityType {
@@ -169,13 +170,8 @@ impl ObsParams {
             create_no_beam_object(xyzs.len())
         } else {
             let beam_file: Option<&str> = None;
-            create_fee_beam_object(
-                beam_file,
-                xyzs.len(),
-                mwa_hyperdrive_beam::Delays::Partial(vec![0; 16]),
-                None,
-            )
-            .unwrap()
+            create_fee_beam_object(beam_file, xyzs.len(), Delays::Partial(vec![0; 16]), None)
+                .unwrap()
         };
         let flagged_tiles = vec![];
         let array_longitude_rad = MWA_LONG_RAD;
