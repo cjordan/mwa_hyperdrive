@@ -58,12 +58,12 @@ fn test_average_epoch2() {
 #[test]
 fn test_generate_tile_baseline_maps() {
     let total_num_tiles = 128;
-    let mut tile_flags = vec![];
+    let mut tile_flags = HashSet::new();
     let maps = TileBaselineMaps::new(total_num_tiles, &tile_flags);
     assert_eq!(maps.tile_to_unflagged_cross_baseline_map[&(0, 1)], 0);
     assert_eq!(maps.unflagged_cross_baseline_to_tile_map[&0], (0, 1));
 
-    tile_flags.push(1);
+    tile_flags.insert(1);
     let maps = TileBaselineMaps::new(total_num_tiles, &tile_flags);
     assert_eq!(maps.tile_to_unflagged_cross_baseline_map[&(0, 2)], 0);
     assert_eq!(maps.tile_to_unflagged_cross_baseline_map[&(2, 3)], 126);

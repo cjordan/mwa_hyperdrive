@@ -9,7 +9,7 @@
 #[cfg(test)]
 mod tests;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use hifitime::Epoch;
 use marlu::c64;
@@ -115,7 +115,7 @@ pub(crate) struct TileBaselineMaps {
 }
 
 impl TileBaselineMaps {
-    pub(crate) fn new(total_num_tiles: usize, flagged_tiles: &[usize]) -> TileBaselineMaps {
+    pub(crate) fn new(total_num_tiles: usize, flagged_tiles: &HashSet<usize>) -> TileBaselineMaps {
         let mut tile_to_unflagged_cross_baseline_map = HashMap::new();
         let mut unflagged_cross_baseline_to_tile_map = HashMap::new();
         let mut bl = 0;

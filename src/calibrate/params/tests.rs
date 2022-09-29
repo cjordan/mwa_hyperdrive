@@ -33,7 +33,10 @@ fn test_new_params_defaults() {
     assert_abs_diff_eq!(obs_context.freq_res.unwrap(), 40e3);
     // No tiles are flagged in the input data, and no additional flags were
     // supplied.
-    assert_eq!(obs_context.flagged_tiles.len(), 0);
+    assert_eq!(
+        obs_context.get_total_num_tiles(),
+        obs_context.get_num_unflagged_tiles()
+    );
     assert_eq!(params.flagged_tiles.len(), 0);
 
     // By default there are 5 flagged channels per coarse channel. We only have
@@ -52,7 +55,10 @@ fn test_new_params_no_input_flags() {
     let obs_context = params.get_obs_context();
     assert_abs_diff_eq!(obs_context.time_res.unwrap().in_seconds(), 2.0);
     assert_abs_diff_eq!(obs_context.freq_res.unwrap(), 40e3);
-    assert_eq!(obs_context.flagged_tiles.len(), 0);
+    assert_eq!(
+        obs_context.get_total_num_tiles(),
+        obs_context.get_num_unflagged_tiles(),
+    );
     assert_eq!(params.flagged_tiles.len(), 0);
 
     assert_eq!(params.fences.len(), 1);

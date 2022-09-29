@@ -647,7 +647,7 @@ impl<'a> IncompleteSolutions<'a> {
 
         CalibrationSolutions {
             di_jones: out_di_jones,
-            flagged_tiles: params.flagged_tiles.clone(),
+            flagged_tiles: params.flagged_tiles.iter().copied().collect(),
             flagged_chanblocks: flagged_chanblock_indices.clone(),
             chanblock_freqs: Some(chanblock_freqs),
             obsid: obs_context.obsid,

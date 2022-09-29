@@ -12,8 +12,10 @@ mod tests;
 pub(crate) use error::*;
 use helpers::*;
 
-use std::collections::{BTreeSet, HashSet};
-use std::path::{Path, PathBuf};
+use std::{
+    collections::{BTreeSet, HashMap},
+    path::{Path, PathBuf},
+};
 
 use hifitime::{Duration, Epoch, Unit};
 use log::{debug, trace};
@@ -43,6 +45,10 @@ pub(crate) struct MsReader {
 
     /// The [`mwalib::MetafitsContext`] used when [`MsReader`] was created.
     metafits_context: Option<MetafitsContext>,
+
+    /// MSs may not number their antennas 0 to the total number of antennas.
+    /// This map converts a MS antenna number to a 0-to-total index.
+    tile_map: HashMap<i32, usize>,
 }
 
 pub(crate) enum MsFlavour {
@@ -62,7 +68,9 @@ impl MsReader {
     /// Verify and populate metadata associated with this measurement set.
     ///
     /// The measurement set is expected to be formatted in the way that
-    /// cotter/Birli write measurement sets.
+    /// cotter/Birli write measurement sets. There's a difference between a
+    /// flagged antenna and an antenna which has no data. The former may be
+    /// used, but its flagged status hints that maybe it shouldn't be used.
     // TODO: Handle multiple measurement sets.
     pub(crate) fn new<P: AsRef<Path>, P2: AsRef<Path>>(
         ms: P,
@@ -83,7 +91,7 @@ impl MsReader {
 
             let mut main_table = read_table(ms, None)?;
             if main_table.n_rows() == 0 {
-                return Err(MsReadError::Empty);
+                return Err(MsReadError::MainTableEmpty);
             }
 
             // This currently only returns table names. Maybe that's this function's
@@ -128,7 +136,9 @@ impl MsReader {
             // Get the tile names and XYZ positions.
             let mut antenna_table = read_table(ms, Some("ANTENNA"))?;
             let tile_names: Vec<String> = antenna_table.get_col_as_vec("NAME").unwrap();
-            let tile_names = Vec1::try_from_vec(tile_names).map_err(|_| MsReadError::Empty)?;
+            trace!("There are {} tile names", tile_names.len());
+            let tile_names =
+                Vec1::try_from_vec(tile_names).map_err(|_| MsReadError::AntennaTableEmpty)?;
 
             let get_casacore_positions = |antenna_table: &mut Table, flavour: &MsFlavour| {
                 let mut casacore_positions = Vec::with_capacity(antenna_table.n_rows() as usize);
@@ -172,88 +182,112 @@ impl MsReader {
                 (MsFlavour::Casa, Some(context)) => marlu::XyzGeodetic::get_tiles_mwa(context),
                 (MsFlavour::Casa, None) => todo!(),
             };
-            let tile_xyzs = Vec1::try_from_vec(tile_xyzs).map_err(|_| MsReadError::Empty)?;
+            trace!("There are positions for {} tiles", tile_xyzs.len());
+            // Not sure if this is even possible, but we'll handle it anyway.
+            if tile_xyzs.len() != tile_names.len() {
+                return Err(MsReadError::MismatchNumNamesNumXyzs);
+            }
+            let tile_xyzs =
+                Vec1::try_from_vec(tile_xyzs).map_err(|_| MsReadError::AntennaTableEmpty)?;
             let total_num_tiles = tile_xyzs.len();
-            trace!("There are {} total tiles", total_num_tiles);
 
-            // Get the observation's flagged tiles. cotter doesn't populate the
-            // ANTENNA table with this information; it looks like all tiles are
-            // unflagged there. But, the flagged tiles don't appear in the main
-            // table of baselines. Take the first n baeslines (where n is the length
-            // of `xyz` above, which is the number of tiles) from the main table,
-            // and find any missing antennas; these are the flagged tiles.
+            // Analyse the antenna numbers in the main table. We need to ensure
+            // that there aren't more antennas here than there are antenna names
+            // or XYZs. We also need to identify antenna numbers that have no
+            // associated data ("unavailable tiles"). Iterate over the baselines
+            // (i.e. main table rows) until we've seen all available antennas.
             let mut autocorrelations_present = false;
-            let flagged_tiles: Vec<usize> = {
-                let mut present_tiles = HashSet::new();
-                // N.B. The following method doesn't work if the antenna1 number
-                // increases faster than antenna2.
-                let mut first_antenna1 = -999;
-                for i in 0..total_num_tiles {
-                    let antenna1: i32 = main_table.get_cell("ANTENNA1", i as u64).unwrap();
-                    if first_antenna1 == -999 {
-                        first_antenna1 = antenna1;
-                        present_tiles.insert(antenna1 as usize);
-                    }
-                    // We concern ourselves only with baselines with the first
-                    // antenna.
-                    if antenna1 != first_antenna1 {
-                        break;
-                    }
-                    let antenna2: i32 = main_table.get_cell("ANTENNA2", i as u64).unwrap();
+            let (tile_map, unavailable_tiles): (HashMap<i32, usize>, Vec<usize>) = {
+                let antenna1: Vec<i32> = main_table.get_col_as_vec("ANTENNA1").unwrap();
+                let antenna2: Vec<i32> = main_table.get_col_as_vec("ANTENNA2").unwrap();
+
+                let mut present_tiles = HashSet::with_capacity(total_num_tiles);
+                for (&antenna1, &antenna2) in antenna1.iter().zip(antenna2.iter()) {
+                    present_tiles.insert(antenna1);
+                    present_tiles.insert(antenna2);
+
                     if !autocorrelations_present && antenna1 == antenna2 {
-                        // TODO: Verify that this happens if cotter is told to not write
-                        // autocorrelations.
                         autocorrelations_present = true;
                     }
-                    present_tiles.insert(antenna2 as usize);
                 }
-                (0..total_num_tiles)
-                    .into_iter()
-                    .filter(|ant| !present_tiles.contains(ant))
-                    .collect()
-            };
-            let num_unflagged_tiles = total_num_tiles - flagged_tiles.len();
-            debug!("Flagged tiles in the MS: {:?}", flagged_tiles);
-            debug!("Autocorrelations present: {}", autocorrelations_present);
 
-            // Get the observation phase centre.
-            let phase_centre = {
-                let mut field_table = read_table(ms, Some("FIELD"))?;
-                let phase_vec = field_table.get_cell_as_vec("PHASE_DIR", 0).unwrap();
-                RADec::new(phase_vec[0], phase_vec[1])
-            };
+                // Ensure there aren't more tiles here than in the names or XYZs
+                // (names and XYZs are checked to be the same above).
+                if present_tiles.len() > tile_xyzs.len() {
+                    return Err(MsReadError::MismatchNumMainTableNumXyzs {
+                        main: present_tiles.len(),
+                        xyzs: tile_xyzs.len(),
+                    });
+                }
 
-            // Now that we have the number of flagged tiles in the measurement set,
-            // we can work out the first and last good timesteps. This is important
-            // because cotter can pad the observation's data with visibilities that
-            // should all be flagged, and we are not interested in using any of
-            // those data. We work out the first and last good timesteps by
-            // inspecting the flags at each timestep.
-            let step = num_unflagged_tiles * (num_unflagged_tiles - 1) / 2
+                // Ensure all MS antenna indices are positive and none are
+                // bigger than the number of XYZs.
+                for &i in &present_tiles {
+                    if i < 0 {
+                        return Err(MsReadError::AntennaNumNegative(i));
+                    }
+                    if i as usize >= tile_xyzs.len() {
+                        return Err(MsReadError::AntennaNumTooBig(i));
+                    }
+                }
+
+                let mut tile_map = HashMap::with_capacity(present_tiles.len());
+                let mut unavailable_tiles =
+                    Vec::with_capacity(total_num_tiles - present_tiles.len());
+                for i_tile in 0..total_num_tiles {
+                    if let Some(v) = present_tiles.get(&(i_tile as i32)) {
+                        tile_map.insert(*v, i_tile);
+                    } else {
+                        unavailable_tiles.push(i_tile);
+                    }
+                }
+                (tile_map, unavailable_tiles)
+            };
+            debug!("Autocorrelations present: {autocorrelations_present}");
+            debug!("Unavailable tiles: {unavailable_tiles:?}");
+
+            // This is the number of main table rows (i.e. baselines) per
+            // timestep.
+            let step = total_num_tiles * (total_num_tiles - 1) / 2
                 + if autocorrelations_present {
-                    num_unflagged_tiles
+                    total_num_tiles
                 } else {
                     0
                 };
             trace!("MS step: {}", step);
+
+            // Work out the first and last good timesteps. This is important
+            // because the observation's data may start and end with
+            // visibilities that are all flagged, and (by default) we are not
+            // interested in using any of those data. We work out the first and
+            // last good timesteps by inspecting the flags at each timestep.
             let unflagged_timesteps: Vec<usize> = {
                 // The first and last good timestep indices.
                 let mut first: Option<usize> = None;
                 let mut last: Option<usize> = None;
 
-                for i in 0..(main_table.n_rows() as usize + 1) / step {
-                    let vis_flags: Vec<bool> = main_table
-                        .get_cell_as_vec(
-                            "FLAG",
-                            // Auto-correlations are more likely to be flagged than
-                            // cross-correlations, so ignore the autos (if present).
-                            (i * step + usize::from(autocorrelations_present)) as u64,
-                        )
-                        .unwrap();
-                    match (first, last, vis_flags.into_iter().all(|f| f)) {
-                        (None, _, false) => first = Some(i),
-                        (Some(_), None, true) => last = Some(i),
-                        _ => (),
+                trace!("Searching for unflagged timesteps in the MS");
+                for i_step in 0..(main_table.n_rows() as usize + 1) / step {
+                    trace!("Reading timestep {i_step}");
+                    let mut all_rows_for_step_flagged = true;
+                    for i_row in 0..step {
+                        let vis_flags: Vec<bool> = main_table
+                            .get_cell_as_vec("FLAG", (i_step * step + i_row) as u64)
+                            .unwrap();
+                        let all_flagged = vis_flags.into_iter().all(|f| f);
+                        if !all_flagged {
+                            all_rows_for_step_flagged = false;
+                            if first.is_none() {
+                                first = Some(i_step);
+                                debug!("First good timestep: {i_step}");
+                            }
+                            break;
+                        }
+                    }
+                    if all_rows_for_step_flagged && first.is_some() {
+                        last = Some(i_step);
+                        debug!("Last good timestep: {}", i_step - 1);
+                        break;
                     }
                 }
 
@@ -263,11 +297,28 @@ impl MsReader {
                     // If there weren't any flags at the end of the MS, then the
                     // last timestep is fine.
                     (Some(f), None) => f..main_table.n_rows() as usize / step,
-                    _ => return Err(MsReadError::AllFlagged),
+                    // All timesteps are flagged. The user can still use the MS,
+                    // but they must specify some amount of flagged timesteps.
+                    _ => 0..0,
                 }
             }
             .into_iter()
             .collect();
+
+            // Neither Birli nor cotter utilise the "FLAG_ROW" column of the
+            // antenna table. This is the best (only?) way to unambiguously
+            // identify flagged tiles. I (CHJ) have investigated determining
+            // flagged tiles from the main table, but (1) only Birli uses the
+            // "FLAG_ROW" column, (2) baselines could be flagged independent of
+            // tile flags, (3) it can be difficult to determine/ambiguous if a
+            // baseline is flagged because the whole timestep is flagged. For
+            // these reasons, we say all tiles are unflagged. When reading
+            // visibilities, flags and weights will be applied, so truly flagged
+            // tiles won't be directly used in calibration, but their data is
+            // still uselessly kept in memory.
+            // TODO: Use "FLAG_ROW" in Birli's antenna table.
+            let flagged_tiles = vec![];
+            debug!("Flagged tiles in the MS: {:?}", flagged_tiles);
 
             // Get the unique times in the MS.
             let utc_times: Vec<f64> = main_table.get_col_as_vec("TIME").unwrap();
@@ -385,6 +436,13 @@ impl MsReader {
                         Some(obsid_int)
                     }
                 }
+            };
+
+            // Get the observation phase centre.
+            let phase_centre = {
+                let mut field_table = read_table(ms, Some("FIELD"))?;
+                let phase_vec = field_table.get_cell_as_vec("PHASE_DIR", 0).unwrap();
+                RADec::new(phase_vec[0], phase_vec[1])
             };
 
             // Populate the dipole delays and the pointing centre if we can.
@@ -583,6 +641,7 @@ impl MsReader {
                 tile_names,
                 tile_xyzs,
                 flagged_tiles,
+                unavailable_tiles,
                 autocorrelations_present,
                 dipole_delays,
                 dipole_gains,
@@ -601,6 +660,7 @@ impl MsReader {
                 ms: ms.to_path_buf(),
                 step,
                 metafits_context: mwalib_context,
+                tile_map,
             };
             Ok(ms)
         }
@@ -631,12 +691,15 @@ impl MsReader {
                 // Antenna numbers are zero indexed.
                 let ant1: i32 = row.get_cell("ANTENNA1").unwrap();
                 let ant2: i32 = row.get_cell("ANTENNA2").unwrap();
+                // Use our map.
+                let ant1 = self.tile_map[&ant1];
+                let ant2 = self.tile_map[&ant2];
 
                 // Read this row if the baseline is unflagged.
                 if let Some(crosses) = crosses.as_mut() {
                     if let Some(bl) = crosses
                         .tile_to_unflagged_baseline_map
-                        .get(&(ant1 as usize, ant2 as usize))
+                        .get(&(ant1, ant2))
                         .cloned()
                     {
                         // The data array is arranged [frequency][instrumental_pol].
@@ -744,8 +807,8 @@ impl MsReader {
                 }
 
                 if let Some(autos) = autos.as_mut() {
-                    if ant1 == ant2 && !autos.flagged_tiles.contains(&(ant1 as usize)) {
-                        let mut ant = ant1 as usize;
+                    if ant1 == ant2 && !autos.flagged_tiles.contains(&ant1) {
+                        let mut ant = ant1;
                         let ms_data: Array2<c32> = row.get_cell("DATA").unwrap();
                         let ms_weights: Array2<f32> = row.get_cell("WEIGHT_SPECTRUM").unwrap();
                         let flags: Array2<bool> = row.get_cell("FLAG").unwrap();
@@ -873,7 +936,7 @@ impl VisRead for MsReader {
         auto_weights_array: ArrayViewMut2<f32>,
         timestep: usize,
         tile_to_unflagged_baseline_map: &HashMap<(usize, usize), usize>,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(
@@ -917,7 +980,7 @@ impl VisRead for MsReader {
         data_array: ArrayViewMut2<Jones<f32>>,
         weights_array: ArrayViewMut2<f32>,
         timestep: usize,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(

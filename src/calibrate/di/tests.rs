@@ -290,7 +290,7 @@ fn get_default_params() -> CalibrateParams {
         raw_data_corrections: None,
         beam: create_no_beam_object(1),
         source_list: SourceList::new(),
-        flagged_tiles: vec![],
+        flagged_tiles: HashSet::new(),
         uvw_min: 0.0,
         uvw_max: f64::INFINITY,
         freq_centroid: 150e6,
@@ -365,7 +365,7 @@ fn incomplete_to_complete_trivial() {
         },
     ];
     params.fences.first_mut().flagged_chanblock_indices = vec![];
-    params.flagged_tiles = vec![];
+    params.flagged_tiles = HashSet::new();
     let num_timeblocks = params.timeblocks.len();
     let num_tiles = params.get_total_num_tiles();
     let num_chanblocks = params.fences.first().chanblocks.len();
@@ -428,7 +428,7 @@ fn incomplete_to_complete_flags_simple() {
         },
     ];
     params.fences.first_mut().flagged_chanblock_indices = vec![0];
-    params.flagged_tiles = vec![];
+    params.flagged_tiles = HashSet::new();
     let num_timeblocks = params.timeblocks.len();
     let total_num_tiles = params.get_total_num_tiles();
     let num_tiles = total_num_tiles - params.flagged_tiles.len();
@@ -500,7 +500,7 @@ fn incomplete_to_complete_flags_simple2() {
             _freq: 153e6,
         },
     ];
-    params.flagged_tiles = vec![];
+    params.flagged_tiles = HashSet::new();
     params.fences.first_mut().flagged_chanblock_indices = vec![3];
     let num_timeblocks = params.timeblocks.len();
     let num_chanblocks = params.fences.first().chanblocks.len();
@@ -576,7 +576,7 @@ fn incomplete_to_complete_flags_complex() {
         },
     ];
     params.fences.first_mut().flagged_chanblock_indices = vec![1];
-    params.flagged_tiles = vec![2];
+    params.flagged_tiles = HashSet::from([2]);
     let num_timeblocks = params.timeblocks.len();
     let num_chanblocks = params.fences.first().chanblocks.len();
     let total_num_tiles = params.get_total_num_tiles();
@@ -935,13 +935,17 @@ fn test_1090008640_calibrate_model_ms() {
     assert_eq!(ctx_m.all_timesteps.len(), num_timesteps);
     assert_eq!(ctx_m.timestamps, ctx_c.timestamps);
     assert_eq!(ctx_m.fine_chan_freqs, ctx_c.fine_chan_freqs);
-    assert_eq!(ctx_m.flagged_tiles, ctx_c.flagged_tiles);
+    let m_flags = ctx_m.get_tile_flags(false, None).unwrap();
+    let c_flags = ctx_c.get_tile_flags(false, None).unwrap();
+    for m in &m_flags {
+        assert!(c_flags.contains(m));
+    }
     assert_eq!(ctx_m.tile_xyzs, ctx_c.tile_xyzs);
     assert_eq!(ctx_m.flagged_fine_chans, ctx_c.flagged_fine_chans);
 
     let flagged_fine_chans_set: HashSet<usize> = ctx_m.flagged_fine_chans.iter().cloned().collect();
-    let tile_to_baseline_map = TileBaselineMaps::new(ctx_m.tile_xyzs.len(), &ctx_m.flagged_tiles)
-        .tile_to_unflagged_cross_baseline_map;
+    let tile_to_baseline_map =
+        TileBaselineMaps::new(ctx_m.tile_xyzs.len(), &m_flags).tile_to_unflagged_cross_baseline_map;
     let max_baseline_idx = tile_to_baseline_map.values().max().unwrap();
     let data_shape = (
         max_baseline_idx + 1,

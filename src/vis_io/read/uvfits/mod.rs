@@ -203,14 +203,14 @@ impl UvfitsReader {
                 ));
             }
 
-            // Work out the tile flags.
+            // Work out which tiles are unavailable.
             let mut present_tiles_set: HashSet<usize> = HashSet::new();
             metadata.uvfits_baselines.iter().for_each(|&uvfits_bl| {
                 let (ant1, ant2) = decode_uvfits_baseline(uvfits_bl);
                 present_tiles_set.insert(ant1);
                 present_tiles_set.insert(ant2);
             });
-            let flagged_tiles = {
+            let unavailable_tiles = {
                 let mut v = tile_map
                     .iter()
                     .filter(|(i, _)| !present_tiles_set.contains(*i))
@@ -219,6 +219,12 @@ impl UvfitsReader {
                 v.sort_unstable();
                 v
             };
+            // Similar to the measurement set situation, we have no way(?) to
+            // identify tiles in the uvfits file that have data but shouldn't be
+            // used (i.e. they are flagged). So, we assume all tiles are
+            // unflagged, except those that are "unavailable" (determined
+            // above).
+            let flagged_tiles = vec![];
 
             // Work out the timestamp epochs. The file tells us what time standard
             // is being used (probably UTC). If this is false, then we assume TAI.
@@ -319,7 +325,8 @@ impl UvfitsReader {
                 }
             }
 
-            debug!("Flagged tiles in the uvfits: {:?}", flagged_tiles);
+            debug!("Unavailable tiles in the uvfits: {unavailable_tiles:?}");
+            debug!("Flagged tiles in the uvfits: {flagged_tiles:?}");
             debug!(
                 "Autocorrelations present: {}",
                 metadata.autocorrelations_present
@@ -465,6 +472,7 @@ impl UvfitsReader {
                 tile_names,
                 tile_xyzs,
                 flagged_tiles,
+                unavailable_tiles,
                 autocorrelations_present: metadata.autocorrelations_present,
                 dipole_delays,
                 dipole_gains,
@@ -670,7 +678,7 @@ impl VisRead for UvfitsReader {
         auto_weights_array: ArrayViewMut2<f32>,
         timestep: usize,
         tile_to_unflagged_baseline_map: &HashMap<(usize, usize), usize>,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(
@@ -714,7 +722,7 @@ impl VisRead for UvfitsReader {
         data_array: ArrayViewMut2<Jones<f32>>,
         weights_array: ArrayViewMut2<f32>,
         timestep: usize,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(

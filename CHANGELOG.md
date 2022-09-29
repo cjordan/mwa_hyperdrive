@@ -8,6 +8,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.2.1] - Unreleased
 ### Fixed
+- Birli and possibly cotter measurement set metadata wasn't being read
+  correctly.
 - Bugs were fixed surrounding the reading of RTS solutions.
 
 ### Changed

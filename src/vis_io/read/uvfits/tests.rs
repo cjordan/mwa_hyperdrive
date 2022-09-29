@@ -47,7 +47,7 @@ fn write_then_read_uvfits(autos: bool) {
         })
         .unzip();
 
-    let flagged_tiles = vec![];
+    let flagged_tiles = HashSet::new();
 
     let all_ant_pairs: Vec<(usize, usize)> = (0..num_tiles)
         .flat_map(|tile1| {
@@ -262,7 +262,7 @@ fn test_1090008640_cross_vis() {
     let TileBaselineMaps {
         tile_to_unflagged_cross_baseline_map,
         ..
-    } = TileBaselineMaps::new(total_num_tiles, &[]);
+    } = TileBaselineMaps::new(total_num_tiles, &HashSet::new());
 
     assert_abs_diff_eq!(
         obs_context.timestamps.first().as_gpst_seconds(),
@@ -337,7 +337,7 @@ fn test_1090008640_auto_vis() {
         vis.view_mut(),
         vis_weights.view_mut(),
         *obs_context.all_timesteps.first(),
-        &[],
+        &HashSet::new(),
         &HashSet::new(),
     );
     assert!(result.is_ok(), "{}", result.unwrap_err());
@@ -413,7 +413,7 @@ fn test_1090008640_auto_vis_with_flags() {
     let obs_context = &uvfits_reader.obs_context;
     let total_num_tiles = obs_context.get_total_num_tiles();
     let num_chans = obs_context.num_fine_chans_per_coarse_chan;
-    let tile_flags = [1, 9];
+    let tile_flags = HashSet::from([1, 9]);
     let num_unflagged_tiles = total_num_tiles - tile_flags.len();
     let chan_flags = HashSet::from([1]);
     let num_unflagged_chans = num_chans - chan_flags.len();
@@ -513,7 +513,7 @@ fn read_1090008640_cross_and_auto_vis() {
     let TileBaselineMaps {
         tile_to_unflagged_cross_baseline_map,
         ..
-    } = TileBaselineMaps::new(total_num_tiles, &[]);
+    } = TileBaselineMaps::new(total_num_tiles, &HashSet::new());
 
     assert_abs_diff_eq!(
         obs_context.timestamps.first().as_gpst_seconds(),
@@ -531,7 +531,7 @@ fn read_1090008640_cross_and_auto_vis() {
         auto_vis_weights.view_mut(),
         *obs_context.all_timesteps.first(),
         &tile_to_unflagged_cross_baseline_map,
-        &[],
+        &HashSet::new(),
         &HashSet::new(),
     );
     assert!(result.is_ok(), "{}", result.unwrap_err());

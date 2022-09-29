@@ -83,7 +83,7 @@ pub(crate) struct CalibrateParams {
     ///
     /// These values correspond to those from the "Antenna" column in HDU 2 of
     /// the metafits file. Zero indexed.
-    pub(crate) flagged_tiles: Vec<usize>,
+    pub(crate) flagged_tiles: HashSet<usize>,
 
     /// The minimum UVW cutoff used in calibration \[metres\].
     pub(crate) uvw_min: f64,
@@ -515,18 +515,7 @@ impl CalibrateParams {
             obs_context.get_tile_flags(ignore_input_data_tile_flags, tile_flags.as_deref())?;
         let num_unflagged_tiles = total_num_tiles - flagged_tiles.len();
         if log_enabled!(Debug) {
-            debug!("Tile indices, names and statuses:");
-            obs_context
-                .tile_names
-                .iter()
-                .enumerate()
-                .map(|(i, name)| {
-                    let flagged = flagged_tiles.contains(&i);
-                    (i, name, if flagged { "  flagged" } else { "unflagged" })
-                })
-                .for_each(|(i, name, status)| {
-                    debug!("    {:3}: {:10}: {}", i, name, status);
-                })
+            obs_context.print_debug_tile_statuses();
         }
         if num_unflagged_tiles == 0 {
             return Err(InvalidArgsError::NoTiles);

@@ -385,9 +385,12 @@ fn vis_subtract(args: VisSubtractArgs, dry_run: bool) -> Result<(), VisSubtractE
 
     let obs_context = input_data.get_obs_context();
     let total_num_tiles = obs_context.get_total_num_tiles();
-    let num_unflagged_tiles = total_num_tiles - obs_context.flagged_tiles.len();
+    let num_unflagged_tiles = obs_context.get_num_unflagged_tiles();
     let num_unflagged_cross_baselines = (num_unflagged_tiles * (num_unflagged_tiles - 1)) / 2;
-    let maps = TileBaselineMaps::new(total_num_tiles, &obs_context.flagged_tiles);
+    let flagged_tiles = obs_context
+        .get_tile_flags(false, None)
+        .expect("can't fail; no additional flags");
+    let maps = TileBaselineMaps::new(total_num_tiles, &flagged_tiles);
     let vis_shape = (
         num_unflagged_cross_baselines,
         obs_context.fine_chan_freqs.len(),
@@ -528,10 +531,10 @@ fn vis_subtract(args: VisSubtractArgs, dry_run: bool) -> Result<(), VisSubtractE
         },
         total_num_tiles,
         num_unflagged_tiles,
-        flagged_tiles: &obs_context
-            .flagged_tiles
+        flagged_tiles: &flagged_tiles
             .iter()
             .cloned()
+            .sorted()
             .map(|i| (obs_context.tile_names[i].as_str(), i))
             .collect::<Vec<_>>(),
     }
@@ -932,11 +935,14 @@ fn model_vis_and_subtract(
     progress_bar: ProgressBar,
     #[cfg(feature = "cuda")] use_cpu_for_modelling: bool,
 ) -> Result<(), VisSubtractError> {
+    let flagged_tiles = obs_context
+        .get_tile_flags(false, None)
+        .expect("can't fail; no additional flags");
     let unflagged_tile_xyzs = obs_context
         .tile_xyzs
         .iter()
         .enumerate()
-        .filter(|(i, _)| !obs_context.flagged_tiles.contains(i))
+        .filter(|(i, _)| !flagged_tiles.contains(i))
         .map(|(_, xyz)| *xyz)
         .collect::<Vec<_>>();
     let freqs = obs_context
@@ -951,7 +957,7 @@ fn model_vis_and_subtract(
         source_list,
         &unflagged_tile_xyzs,
         &freqs,
-        &obs_context.flagged_tiles,
+        &flagged_tiles,
         obs_context.phase_centre,
         array_pos.longitude_rad,
         array_pos.latitude_rad,

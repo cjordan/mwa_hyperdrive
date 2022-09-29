@@ -219,9 +219,12 @@ fn test_solutions_apply_trivial(input_data: &dyn VisRead, metafits: &str) {
     assert_abs_diff_eq!(auto_weights, ref_auto_weights);
 
     // Use tile indices for solutions again, but now flag some tiles.
-    tile_flags.extend_from_slice(&[10, 78]);
+    tile_flags.insert(10);
+    tile_flags.insert(78);
     let maps = TileBaselineMaps::new(total_num_tiles, &tile_flags);
-    sols.flagged_tiles.extend_from_slice(&tile_flags);
+    for f in &tile_flags {
+        sols.flagged_tiles.push(*f);
+    }
     // Re-generate the reference data.
     let num_unflagged_tiles = total_num_tiles - tile_flags.len();
     let num_unflagged_cross_baselines = (num_unflagged_tiles * (num_unflagged_tiles - 1)) / 2;

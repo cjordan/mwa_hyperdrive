@@ -414,6 +414,7 @@ impl RawDataReader {
             tile_names,
             tile_xyzs,
             flagged_tiles,
+            unavailable_tiles: vec![],
             autocorrelations_present: true,
             dipole_delays: Some(dipole_delays),
             dipole_gains: Some(dipole_gains),
@@ -728,7 +729,7 @@ impl VisRead for RawDataReader {
         auto_weights_array: ArrayViewMut2<f32>,
         timestep: usize,
         tile_to_unflagged_baseline_map: &HashMap<(usize, usize), usize>,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(
@@ -772,7 +773,7 @@ impl VisRead for RawDataReader {
         data_array: ArrayViewMut2<Jones<f32>>,
         weights_array: ArrayViewMut2<f32>,
         timestep: usize,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError> {
         self.read_inner(

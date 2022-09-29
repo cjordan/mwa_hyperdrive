@@ -634,7 +634,7 @@ pub(super) fn apply_solutions_inner(
     array_position: LatLngHeight,
     dut1: Duration,
     no_autos: bool,
-    tile_flags: &[usize],
+    tile_flags: &HashSet<usize>,
     tile_to_unflagged_cross_baseline_map: &HashMap<(usize, usize), usize>,
     flagged_fine_chans: &HashSet<usize>,
     ignore_input_data_fine_channel_flags: bool,
@@ -836,7 +836,7 @@ pub(super) fn apply_solutions_inner(
 #[allow(clippy::too_many_arguments)]
 fn read_vis(
     obs_context: &ObsContext,
-    tile_flags: &[usize],
+    tile_flags: &HashSet<usize>,
     tile_to_unflagged_cross_baseline_map: &HashMap<(usize, usize), usize>,
     input_data: &dyn VisRead,
     timesteps: &Vec1<usize>,
@@ -928,7 +928,7 @@ fn read_vis(
 fn apply_solutions_thread(
     obs_context: &ObsContext,
     solutions: &CalibrationSolutions,
-    tile_flags: &[usize],
+    tile_flags: &HashSet<usize>,
     fine_chan_flags: &HashSet<usize>,
     rx: Receiver<VisTimestep>,
     tx: Sender<VisTimestep>,

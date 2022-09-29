@@ -275,7 +275,7 @@ struct VisSimParams {
     baseline_to_tile_map: HashMap<usize, (usize, usize)>,
 
     /// Flagged tiles.
-    flagged_tiles: Vec<usize>,
+    flagged_tiles: HashSet<usize>,
 
     /// Timestamps to be simulated.
     timestamps: Vec1<Epoch>,
@@ -460,7 +460,7 @@ impl VisSimParams {
 
         // Prepare a map between baselines and their constituent tiles.
         // TODO: Utilise tile flags.
-        let flagged_tiles: Vec<usize> = vec![];
+        let flagged_tiles = HashSet::new();
         let maps = TileBaselineMaps::new(metafits.num_ants, &flagged_tiles);
 
         // Treat the specified source list as file path. Does it exist? Then use it.

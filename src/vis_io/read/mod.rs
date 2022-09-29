@@ -54,7 +54,7 @@ pub(crate) trait VisRead: Sync + Send {
         auto_weights_array: ArrayViewMut2<f32>,
         timestep: usize,
         tile_to_unflagged_baseline_map: &HashMap<(usize, usize), usize>,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError>;
 
@@ -76,7 +76,7 @@ pub(crate) trait VisRead: Sync + Send {
         data_array: ArrayViewMut2<Jones<f32>>,
         weights_array: ArrayViewMut2<f32>,
         timestep: usize,
-        flagged_tiles: &[usize],
+        flagged_tiles: &HashSet<usize>,
         flagged_fine_chans: &HashSet<usize>,
     ) -> Result<(), VisReadError>;
 }
@@ -94,5 +94,5 @@ struct CrossData<'a, 'b, 'c> {
 struct AutoData<'a, 'b, 'c> {
     data_array: ArrayViewMut2<'a, Jones<f32>>,
     weights_array: ArrayViewMut2<'b, f32>,
-    flagged_tiles: &'c [usize],
+    flagged_tiles: &'c HashSet<usize>,
 }
