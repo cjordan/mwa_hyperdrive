@@ -1479,6 +1479,7 @@ dependencies = [
  "serial_test",
  "strum",
  "strum_macros",
+ "tar",
  "tempfile",
  "thiserror",
  "toml",
